@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/analytics_screen.dart';
+import 'screens/history_screen.dart';
 import 'screens/profile_screen.dart';
 
 class MainWrapper extends StatefulWidget {
@@ -16,6 +17,7 @@ class _MainWrapperState extends State<MainWrapper> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const AnalyticsScreen(),
+    const HistoryScreen(),
     const ProfileScreen(),
   ];
 
@@ -42,6 +44,11 @@ class _MainWrapperState extends State<MainWrapper> {
             icon: Icon(Icons.bar_chart),
             selectedIcon: Icon(Icons.show_chart),
             label: 'Analytics',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.history),
+            selectedIcon: Icon(Icons.history_edu),
+            label: 'Activity',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

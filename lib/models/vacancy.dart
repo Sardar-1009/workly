@@ -8,6 +8,10 @@ class Vacancy {
   final List<String> tags;
   final String? companyLogoUrl;
 
+  // New Fields for Filters
+  final String workFormat; // Remote, Office, Hybrid
+  final String experience; // 0-1, 1-3, 3-5, 5+
+
   const Vacancy({
     required this.id,
     required this.title,
@@ -17,5 +21,7 @@ class Vacancy {
     required this.description,
     required this.tags,
     this.companyLogoUrl,
+    this.workFormat = 'Office',
+    this.experience = '1-3 years',
   });
 }

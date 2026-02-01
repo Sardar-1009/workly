@@ -6,6 +6,7 @@ enum AnalyticsEventType {
   swipe,
   apply,
   details, // "Read More"
+  accepted,
 }
 
 class AnalyticsService {
@@ -49,12 +50,14 @@ class AnalyticsService {
     swipes = prefs.getInt('${_prefix}swipe_$dateKey') ?? 0;
     applies = prefs.getInt('${_prefix}apply_$dateKey') ?? 0;
     details = prefs.getInt('${_prefix}details_$dateKey') ?? 0;
+    int accepted = prefs.getInt('${_prefix}accepted_$dateKey') ?? 0;
 
     return {
       'views': views,
       'swipes': swipes,
       'applies': applies,
       'details': details,
+      'accepted': accepted,
     };
   }
 }

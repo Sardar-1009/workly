@@ -16,6 +16,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     'swipes': 0,
     'applies': 0,
     'details': 0,
+    'accepted': 0,
   };
   bool _isLoading = true;
 
@@ -74,8 +75,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             Icons.swipe, Colors.orange),
                         _buildStatCard('Applies', _stats['applies'] ?? 0,
                             Icons.check_circle, Colors.green),
-                        _buildStatCard('Accepted', 0, Icons.handshake,
-                            Colors.teal), // Mock 'Accepted'
+                        _buildStatCard('Accepted', _stats['accepted'] ?? 0,
+                            Icons.handshake, Colors.teal),
                       ],
                     ),
 
