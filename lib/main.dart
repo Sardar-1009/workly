@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'main_wrapper.dart';
 import 'screens/login_screen.dart';
 import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
@@ -40,7 +40,7 @@ class AuthWrapper extends StatelessWidget {
         }
 
         final isLoggedIn = snapshot.data ?? false;
-        return isLoggedIn ? const HomeScreen() : const LoginScreen();
+        return isLoggedIn ? const MainWrapper() : const LoginScreen();
       },
     );
   }
