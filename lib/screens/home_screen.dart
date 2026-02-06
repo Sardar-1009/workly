@@ -32,6 +32,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     filteredVacancies = List.from(allVacancies);
+    // Mark first vacancy as viewed immediately when screen loads
+    if (filteredVacancies.isNotEmpty) {
+      _userJobService.markJobViewed(filteredVacancies[0].id);
+    }
   }
 
   void _applyFilters() {
@@ -165,8 +169,12 @@ class _HomeScreenState extends State<HomeScreen> {
     if (previousIndex >= filteredVacancies.length) return true;
 
     final vacancy = filteredVacancies[previousIndex];
-    // Mark as viewed in history
-    _userJobService.markJobViewed(vacancy.id);
+    // Mark CURRENT job as viewed happens on load.
+    // We need to mark the NEXT job as viewed because it's about to be shown.
+    int nextIndex = previousIndex + 1;
+    if (nextIndex < filteredVacancies.length) {
+      _userJobService.markJobViewed(filteredVacancies[nextIndex].id);
+    }
     _analyticsService.logEvent(AnalyticsEventType.swipe);
 
     if (direction == CardSwiperDirection.right) {

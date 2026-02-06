@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
-import 'screens/analytics_screen.dart';
+// import 'screens/analytics_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/profile_screen.dart';
 
@@ -16,7 +16,7 @@ class _MainWrapperState extends State<MainWrapper> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const AnalyticsScreen(),
+    // const AnalyticsScreen(), // Disabled for testing
     const HistoryScreen(),
     const ProfileScreen(),
   ];
@@ -24,10 +24,7 @@ class _MainWrapperState extends State<MainWrapper> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: _screens[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
@@ -40,11 +37,13 @@ class _MainWrapperState extends State<MainWrapper> {
             icon: Icon(Icons.swipe),
             label: 'Jobs',
           ),
+          /*
           NavigationDestination(
             icon: Icon(Icons.bar_chart),
             selectedIcon: Icon(Icons.show_chart),
             label: 'Analytics',
           ),
+          */
           NavigationDestination(
             icon: Icon(Icons.history),
             selectedIcon: Icon(Icons.history_edu),
