@@ -1,0 +1,176 @@
+0) Цель
+Собрать у пользователя базовые параметры подбора вакансий (preferences), сохранить их в профиле/локально и использовать дальше для фильтрации ленты, Activity и аналитики.
+Onboarding показывается:
+после регистрации (первый запуск нового аккаунта)
+или при первом входе, если у профиля нет onboarding-данных (onboardingCompleted=false)
+После завершения → переход на Home (лента вакансий).
+1) Общие требования ко всем 5 экранам
+1.1 Навигация
+Вверху: кнопка Back (стрелка влево)
+Вверху: Progress bar (индикатор прогресса 1/5 … 5/5)
+Внизу: кнопка Continue
+Continue активна только если текущий шаг валиден
+Back возвращает на предыдущий экран, без потери выбранных значений
+Нажатие Continue:
+валидирует ввод
+сохраняет данные шага в OnboardingDraft (локально в памяти + в хранилище)
+переходит на следующий экран
+1.2 Сохранение и восстановление
+Все выбранные значения должны сохраняться:
+при уходе назад/вперед
+при сворачивании приложения
+при перезапуске (если onboarding не завершен)
+При повторном заходе в onboarding — значения подставляются.
+Рекомендация хранения MVP:
+локально: SharedPreferences / Hive (любой, который у тебя уже используется)
+структура: один JSON onboardingDraft + флаг onboardingCompleted
+1.3 Финальное применение
+На последнем шаге (5/5) при Continue:
+сохраняем итоговые onboarding-данные в UserProfile / UserPreferences
+ставим onboardingCompleted=true
+переходим на Home
+2) Модель данных (обязательная)
+2.1 OnboardingDraft / Preferences
+{
+  "experienceLevel": "internship | entry | junior | mid | senior | expert",
+  "jobCategories": ["software_engineering", "design", "data"],
+  "jobUrgency": "1m | 3m | 6m | 12m_plus",
+  "salaryMin": 50000,
+  "salaryMax": 100000,
+  "jobPriorities": ["meaningful_work", "experienced_leaders", "top_investors"],
+  "onboardingCompleted": false
+}
+2.2 Правила валидности
+experienceLevel — обязателен (1 выбранный)
+jobCategories — 1..3 (минимум 1, максимум 3)
+jobUrgency — обязателен (1 выбранный)
+salaryMin и salaryMax — обязателен диапазон, min ≤ max
+jobPriorities — ровно 3 (максимум 3, минимум 3)
+3) Экран 1/5 — Experience Level
+3.1 Заголовки (как в примере)
+Title: “How much experience do you have?”
+Subtitle: “Select your experience level below.”
+3.2 UI
+Список selectable-карточек (single select):
+Internship
+Entry Level & Graduate
+Junior (1–2 years)
+Mid Level (3–5 years)
+Senior (6–9 years)
+Expert & Leadership (10+ years)
+3.3 Поведение
+Выбор = выделение карточки
+Можно выбрать только одну
+Continue активна только после выбора
+3.4 Сохранение
+При Continue:
+experienceLevel = выбранное значение
+4) Экран 2/5 — Job Categories (до 3)
+4.1 Заголовки
+Title: “What kind of job are you looking for?”
+Subtitle: “Select up to 3 job categories that interest you most.”
+4.2 UI
+Сетка “чипов” (multi-select) с иконками (как в примере). Категории (примерный набор):
+Software Engineering
+Healthcare
+Consulting
+Data
+Design
+Finance
+Legal
+Human Resources
+Marketing
+Operations & Strategy
+Product
+Sales
+Customer Success
+Security
+Misc. Engineering
+4.3 Правила выбора
+Можно выбрать максимум 3
+При попытке выбрать 4-ю:
+НЕ добавлять
+показать лёгкое уведомление/снек: “You can select up to 3”
+Continue активна, если выбрано минимум 1
+(или строго 3 — но по примеру лучше 1..3)
+4.4 Сохранение
+jobCategories = массив выбранных (1..3)
+5) Экран 3/5 — Job Urgency (когда нужна работа)
+5.1 Заголовки
+Title: “When do you need a new job?”
+Subtitle: “This will be used to calibrate your custom plan.”
+5.2 UI
+Список selectable-карточек (single select):
+1 month — “Get me a job now!”
+3 months — “I have some time”
+6 months — “Maximize my options”
+12 months+ — “Seeing what’s out there”
+5.3 Поведение
+Single select
+Continue активна после выбора
+5.4 Сохранение
+jobUrgency = выбранное
+6) Экран 4/5 — Expected Salary Range (min/max)
+6.1 Заголовки
+Title: “Expected salary range?”
+Subtitle: “Set your expected salary range to help match you with the right jobs.”
+6.2 UI
+Два слайдера:
+Minimum Salary (значение сверху)
+Maximum Salary (значение сверху)
+Диапазон значений:
+min: 0
+max: 500000
+(как на твоём примере; при желании можно менять валюту)
+Шаг слайдера:
+1000 или 5000 (на твой выбор, но фиксировать в коде)
+6.3 Правила и защита от ошибок
+При изменении salaryMin:
+если salaryMin > salaryMax, тогда salaryMax автоматически подтягивается до salaryMin
+При изменении salaryMax:
+если salaryMax < salaryMin, тогда salaryMin автоматически подтягивается до salaryMax
+Continue всегда активна (если оба значения существуют), но логичнее активировать всегда — так как диапазон всегда валиден за счёт автокоррекции
+6.4 Сохранение
+salaryMin, salaryMax
+7) Экран 5/5 — Job Priorities (ровно 3)
+7.1 Заголовки
+Title: “What’s most important in a new job?”
+Subtitle: “This will be used to calibrate your job matches.”
+Доп. строка: “Select 3/3 interests” (динамически: 0/3, 1/3, 2/3, 3/3)
+7.2 UI
+Сетка чипов (multi-select) как в примере, примерный набор:
+Meaningful work
+Experienced leaders
+Top investors
+Wear many hats
+Work with smart people
+Challenging work
+Growing fast
+Cool startup
+Stable company
+Innovative technology
+Flexible hours
+Great benefits
+7.3 Правила выбора (строго)
+Нужно выбрать ровно 3
+Continue активна только при 3 выбранных
+Если выбрано 3 и пользователь пытается выбрать 4:
+НЕ добавлять
+показать “Select up to 3”
+Если пользователь снимает выбор — счетчик уменьшается, Continue выключается пока снова не станет 3
+7.4 Сохранение и завершение onboarding
+На Continue:
+jobPriorities = выбранные 3
+onboardingCompleted = true
+сохранить весь объект в профиль/хранилище
+перейти на Home (лента)
+8) Интеграция с профилем и дальнейшим приложением
+После завершения onboarding данные должны быть доступны:
+в Profile (как редактируемые поля)
+для фильтрации ленты (если фильтры уже есть или будут)
+Минимум:
+сохранить в UserProfile.preferences и показывать в профиле:
+опыт
+интересы (категории)
+зарплатный диапазон
+срок поиска

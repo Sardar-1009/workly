@@ -11,7 +11,8 @@ class AuthService {
   }
 
   // Register a new user
-  Future<bool> register(String name, String username, String password) async {
+  Future<bool> register(
+      String name, String email, String username, String password) async {
     await _mockDelay();
     final prefs = await SharedPreferences.getInstance();
 
@@ -23,6 +24,7 @@ class AuthService {
     // Save user data
     final userData = {
       'name': name,
+      'email': email,
       'username': username,
       'password': password,
     };
@@ -75,6 +77,19 @@ class AuthService {
     if (userJson != null) {
       final userData = jsonDecode(userJson);
       return userData['name'];
+    }
+    return null;
+  }
+
+  // Get current user details
+  Future<Map<String, dynamic>?> getCurrentUserDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    final username = prefs.getString(_currentUserKey);
+    if (username == null) return null;
+
+    final userJson = prefs.getString('$_userKeyPrefix$username');
+    if (userJson != null) {
+      return jsonDecode(userJson) as Map<String, dynamic>;
     }
     return null;
   }

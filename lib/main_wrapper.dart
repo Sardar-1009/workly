@@ -3,6 +3,7 @@ import 'screens/home_screen.dart';
 // import 'screens/analytics_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/chat_list_screen.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -18,6 +19,7 @@ class _MainWrapperState extends State<MainWrapper> {
     const HomeScreen(),
     // const AnalyticsScreen(), // Disabled for testing
     const HistoryScreen(),
+    const ChatListScreen(),
     const ProfileScreen(),
   ];
 
@@ -48,6 +50,11 @@ class _MainWrapperState extends State<MainWrapper> {
             icon: Icon(Icons.history),
             selectedIcon: Icon(Icons.history_edu),
             label: 'Activity',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.chat_bubble_outline),
+            selectedIcon: Icon(Icons.chat_bubble),
+            label: 'Chats',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

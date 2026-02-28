@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/primary_button.dart';
-import '../main_wrapper.dart';
+
+import 'onboarding/onboarding_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,6 +15,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -26,6 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       final success = await _authService.register(
         _nameController.text,
+        _emailController.text,
         _usernameController.text,
         _passwordController.text,
       );
@@ -34,7 +37,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         setState(() => _isLoading = false);
         if (success) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const MainWrapper()),
+            MaterialPageRoute(builder: (context) => const OnboardingScreen()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -89,6 +92,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       icon: Icons.badge_outlined,
                       validator: (value) =>
                           value == null || value.isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: _emailController,
+                      label: 'Email',
+                      icon: Icons.email_outlined,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return 'Required';
+                        if (!value.contains('@')) return 'Invalid email';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(

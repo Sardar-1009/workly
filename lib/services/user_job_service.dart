@@ -106,4 +106,6 @@ class UserJobService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getStringList('${prefix}viewed_jobs') ?? [];
   }
+
+  getAppliedJobIds() {}
 }
