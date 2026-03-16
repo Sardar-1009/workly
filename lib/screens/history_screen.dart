@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/vacancy.dart';
-import '../data/mock_vacancies.dart';
+import '../services/job_service.dart';
 import '../services/user_job_service.dart';
 import '../services/analytics_service.dart'; // To log Accepted status
 
@@ -15,7 +15,8 @@ class _HistoryScreenState extends State<HistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final UserJobService _userJobService = UserJobService();
-  final List<Vacancy> _allVacancies = MockVacancyService.getVacancies();
+  final JobService _jobService = JobService();
+  List<Vacancy> _allVacancies = [];
 
   // Data
   List<Vacancy> _viewed = [];
@@ -39,6 +40,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     final viewedIds = await _userJobService.getViewedJobs();
     final savedIds = await _userJobService.getSavedJobs();
     final appliedMap = await _userJobService.getAppliedJobsMap();
+    _allVacancies = await _jobService.getVacancies();
 
     // Map to Objects
     _viewed = _allVacancies.where((v) => viewedIds.contains(v.id)).toList();
@@ -67,6 +69,7 @@ class _HistoryScreenState extends State<HistoryScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Activity'),
         centerTitle: true,
         bottom: TabBar(
@@ -103,7 +106,7 @@ class _HistoryScreenState extends State<HistoryScreen>
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: ListTile(
-            leading: CircleAvatar(child: Text(vacancy.company[0])),
+            leading: CircleAvatar(child: Text(vacancy.company.isNotEmpty ? vacancy.company[0] : '?')),
             title: Text(vacancy.title),
             subtitle: Text(vacancy.company),
             trailing: isSavedTab
@@ -144,7 +147,7 @@ class _HistoryScreenState extends State<HistoryScreen>
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           child: ExpansionTile(
-            leading: CircleAvatar(child: Text(vacancy.company[0])),
+            leading: CircleAvatar(child: Text(vacancy.company.isNotEmpty ? vacancy.company[0] : '?')),
             title: Text(vacancy.title),
             subtitle: Text(vacancy.company,
                 maxLines: 1, overflow: TextOverflow.ellipsis),

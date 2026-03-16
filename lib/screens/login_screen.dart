@@ -23,21 +23,21 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      final success = await _authService.login(
+      final errorMessage = await _authService.login(
         _usernameController.text,
         _passwordController.text,
       );
 
       if (mounted) {
         setState(() => _isLoading = false);
-        if (success) {
+        if (errorMessage == null) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const MainWrapper()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Invalid username or password'),
+            SnackBar(
+              content: Text(errorMessage),
               backgroundColor: Colors.red,
             ),
           );

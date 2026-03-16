@@ -25,43 +25,46 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
           setState(() {
-            _currentIndex = index;
+            _currentIndex = 0; // Go back to Home tab if not on Home tab
           });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.swipe),
-            label: 'Jobs',
-          ),
-          /*
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart),
-            selectedIcon: Icon(Icons.show_chart),
-            label: 'Analytics',
-          ),
-          */
-          NavigationDestination(
-            icon: Icon(Icons.history),
-            selectedIcon: Icon(Icons.history_edu),
-            label: 'Activity',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Chats',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+        }
+      },
+      child: Scaffold(
+        body: _screens[_currentIndex],
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.swipe),
+              label: 'Jobs',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.history),
+              selectedIcon: Icon(Icons.history_edu),
+              label: 'Activity',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.chat_bubble_outline),
+              selectedIcon: Icon(Icons.chat_bubble),
+              label: 'Chats',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }

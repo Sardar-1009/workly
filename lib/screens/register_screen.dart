@@ -26,7 +26,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      final success = await _authService.register(
+      final errorMessage = await _authService.register(
         _nameController.text,
         _emailController.text,
         _usernameController.text,
@@ -35,14 +35,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (mounted) {
         setState(() => _isLoading = false);
-        if (success) {
+        if (errorMessage == null) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const OnboardingScreen()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Username already taken'),
+            SnackBar(
+              content: Text(errorMessage),
               backgroundColor: Colors.red,
             ),
           );

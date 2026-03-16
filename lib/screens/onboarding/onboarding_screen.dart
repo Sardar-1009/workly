@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../../models/user_profile.dart'; // For UserPreferences
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../services/auth_service.dart';
 import '../../main_wrapper.dart';
@@ -81,14 +82,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _finishOnboarding() async {
     final authService = AuthService();
+    // Identifier used for profile key
     final userDetails = await authService.getCurrentUserDetails();
     final prefs = await SharedPreferences.getInstance();
 
-    // Identifier used for profile key
-    // We assume username is the key. In real app, we need consistent ID.
-    // Hack: We know the current user key is stored in 'current_user' pref.
-    final currentUserId =
-        prefs.getString('current_user'); // This is the username/ID
+    final authUser = FirebaseAuth.instance.currentUser;
+    final currentUserId = authUser?.uid;
 
     if (currentUserId != null) {
       // Load existing profile or create new

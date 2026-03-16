@@ -1,96 +1,101 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
-  static const String _userKeyPrefix = 'user_';
-  static const String _currentUserKey = 'current_user';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Simulate a backend response delay
-  Future<void> _mockDelay() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-  }
+  // Stream to listen to auth state changes
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   // Register a new user
-  Future<bool> register(
+  Future<String?> register(
       String name, String email, String username, String password) async {
-    await _mockDelay();
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      // 1. Create user in Firebase Auth
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    // Check if user already exists
-    if (prefs.containsKey('$_userKeyPrefix$username')) {
-      return false; // User already exists
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // 2. Save additional user data in Firestore
+        await _firestore.collection('users').doc(user.uid).set(
+            {
+              'name': name,
+              'email': email,
+              'username': username,
+              'createdAt': FieldValue.serverTimestamp(),
+            },
+            SetOptions(
+                merge:
+                    true)); // Merge in case of existing empty applied_jobs doc
+        return null; // Success, no error message
+      }
+      return 'Failed to create user.';
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        return 'The password provided is too weak.';
+      } else if (e.code == 'email-already-in-use') {
+        return 'An account already exists for that email.';
+      }
+      return e.message ?? 'Registration failed.';
+    } catch (e) {
+      return e.toString();
     }
-
-    // Save user data
-    final userData = {
-      'name': name,
-      'email': email,
-      'username': username,
-      'password': password,
-    };
-
-    await prefs.setString('$_userKeyPrefix$username', jsonEncode(userData));
-
-    // Auto login after register
-    await prefs.setString(_currentUserKey, username);
-    return true;
   }
 
   // Login user
-  Future<bool> login(String username, String password) async {
-    await _mockDelay();
-    final prefs = await SharedPreferences.getInstance();
-
-    final userJson = prefs.getString('$_userKeyPrefix$username');
-    if (userJson == null) {
-      return false; // User not found
+  Future<String?> login(String email, String password) async {
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return null; // Success, no error message
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        return 'No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        return 'Wrong password provided for that user.';
+      } else if (e.code == 'invalid-credential') {
+        return 'Invalid email or password.';
+      }
+      return e.message ?? 'Login failed.';
+    } catch (e) {
+      return e.toString();
     }
-
-    final userData = jsonDecode(userJson);
-    if (userData['password'] == password) {
-      await prefs.setString(_currentUserKey, username);
-      return true;
-    }
-
-    return false; // Incorrect password
   }
 
   // Logout user
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_currentUserKey);
+    await _auth.signOut();
   }
 
   // Check if user is logged in
   Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey(_currentUserKey);
+    return _auth.currentUser != null;
   }
 
-  // Get current user name
-  Future<String?> getCurrentUserName() async {
-    final prefs = await SharedPreferences.getInstance();
-    final username = prefs.getString(_currentUserKey);
-    if (username == null) return null;
-
-    final userJson = prefs.getString('$_userKeyPrefix$username');
-    if (userJson != null) {
-      final userData = jsonDecode(userJson);
-      return userData['name'];
-    }
-    return null;
-  }
-
-  // Get current user details
+  // Get current user details from Firestore
   Future<Map<String, dynamic>?> getCurrentUserDetails() async {
-    final prefs = await SharedPreferences.getInstance();
-    final username = prefs.getString(_currentUserKey);
-    if (username == null) return null;
+    User? user = _auth.currentUser;
+    if (user == null) return null;
 
-    final userJson = prefs.getString('$_userKeyPrefix$username');
-    if (userJson != null) {
-      return jsonDecode(userJson) as Map<String, dynamic>;
+    DocumentSnapshot doc =
+        await _firestore.collection('users').doc(user.uid).get();
+    if (doc.exists && doc.data() != null) {
+      return doc.data() as Map<String, dynamic>;
     }
     return null;
+  }
+
+  // Get current user name helper
+  Future<String?> getCurrentUserName() async {
+    final details = await getCurrentUserDetails();
+    return details?['name'];
   }
 }

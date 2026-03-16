@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:workly/firebase_options.dart';
@@ -54,8 +55,8 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: AuthService().isLoggedIn(),
+    return StreamBuilder<User?>(
+      stream: AuthService().authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -63,14 +64,14 @@ class AuthWrapper extends StatelessWidget {
           );
         }
 
-        final isLoggedIn = snapshot.data ?? false;
-        if (!isLoggedIn) {
+        final user = snapshot.data;
+        if (user == null) {
           return const LoginScreen();
         }
 
-        // If logged in, check onboarding status
+        // If logged in, check onboarding status in Firestore
         return FutureBuilder<bool>(
-          future: _checkOnboarding(),
+          future: _checkOnboarding(user.uid),
           builder: (context, onboardSnapshot) {
             if (onboardSnapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
@@ -85,21 +86,18 @@ class AuthWrapper extends StatelessWidget {
     );
   }
 
-  Future<bool> _checkOnboarding() async {
-    final authService = AuthService();
-    final username = await authService.getCurrentUserName();
-    if (username == null) return false;
-
-    // We assume username is the key. In real app, we need consistent ID.
-    // Re-polishing: AuthService uses 'current_user' pref to store username.
+  Future<bool> _checkOnboarding(String uid) async {
     final prefs = await SharedPreferences.getInstance();
-    final currentUserId = prefs.getString('current_user');
+    final profileJson = prefs.getString('profile_$uid');
 
-    if (currentUserId != null) {
-      final profileJson = prefs.getString('profile_$currentUserId');
-      if (profileJson != null) {
+    // For MVP we still check local preferences for onboarding state since UserProfile model relies on it.
+    // In a full implementation, this should be moved to the Firestore `users` doc as well.
+    if (profileJson != null) {
+      try {
         final profile = UserProfile.fromJson(jsonDecode(profileJson));
         return profile.onboardingCompleted;
+      } catch (e) {
+        return false;
       }
     }
     return false;

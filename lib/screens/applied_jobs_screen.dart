@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/vacancy.dart';
-import '../data/mock_vacancies.dart';
+import '../services/job_service.dart';
 import '../services/user_job_service.dart';
 
 class AppliedJobsScreen extends StatefulWidget {
@@ -12,6 +12,7 @@ class AppliedJobsScreen extends StatefulWidget {
 
 class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
   final UserJobService _userJobService = UserJobService();
+  final JobService _jobService = JobService();
   List<Vacancy> _appliedVacancies = [];
   bool _isLoading = true;
 
@@ -23,7 +24,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
 
   Future<void> _loadAppliedJobs() async {
     final appliedIds = await _userJobService.getAppliedJobIds();
-    final allVacancies = MockVacancyService.getVacancies();
+    final allVacancies = await _jobService.getVacancies();
 
     setState(() {
       _appliedVacancies =
@@ -70,7 +71,7 @@ class _AppliedJobsScreenState extends State<AppliedJobsScreen> {
                         leading: CircleAvatar(
                           backgroundColor:
                               Theme.of(context).colorScheme.primaryContainer,
-                          child: Text(vacancy.company[0]),
+                          child: Text(vacancy.company.isNotEmpty ? vacancy.company[0] : '?'),
                         ),
                         title: Text(
                           vacancy.title,

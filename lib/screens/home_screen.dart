@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
-import '../data/mock_vacancies.dart';
+import '../services/job_service.dart';
 import '../models/vacancy.dart';
 import '../widgets/vacancy_card.dart';
 import '../widgets/action_buttons.dart';
@@ -17,8 +17,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final CardSwiperController controller = CardSwiperController();
-  final List<Vacancy> allVacancies = MockVacancyService.getVacancies();
+  final JobService _jobService = JobService();
+  List<Vacancy> allVacancies = [];
   List<Vacancy> filteredVacancies = [];
+  bool isLoading = true;
 
   final UserJobService _userJobService = UserJobService();
   final AnalyticsService _analyticsService = AnalyticsService();
@@ -31,10 +33,23 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    filteredVacancies = List.from(allVacancies);
-    // Mark first vacancy as viewed immediately when screen loads
-    if (filteredVacancies.isNotEmpty) {
-      _userJobService.markJobViewed(filteredVacancies[0].id);
+    _loadVacancies();
+  }
+
+  Future<void> _loadVacancies() async {
+    try {
+      final fetchedVacancies = await _jobService.getVacancies();
+      setState(() {
+        allVacancies = fetchedVacancies;
+        filteredVacancies = List.from(allVacancies);
+        isLoading = false;
+      });
+      // Mark first vacancy as viewed immediately when screen loads
+      if (filteredVacancies.isNotEmpty) {
+        _userJobService.markJobViewed(filteredVacancies[0].id);
+      }
+    } catch (e) {
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -123,30 +138,33 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             Expanded(
-              child: filteredVacancies.isEmpty
-                  ? const Center(child: Text("No jobs found"))
-                  : CardSwiper(
-                      key: ValueKey(
-                          filteredVacancies.length), // Rebuild if list changes
-                      controller: controller,
-                      cardsCount: filteredVacancies.length,
-                      numberOfCardsDisplayed: filteredVacancies.length < 3
-                          ? filteredVacancies.length
-                          : 3,
-                      backCardOffset: const Offset(0, 40),
-                      padding: const EdgeInsets.all(24.0),
-                      cardBuilder: (context, index, percentThresholdX,
-                          percentThresholdY) {
-                        // Log generic view roughly
-                        _analyticsService.logEvent(AnalyticsEventType.view);
-                        // Verify bounds
-                        if (index >= filteredVacancies.length)
-                          return const SizedBox();
-                        return VacancyCard(vacancy: filteredVacancies[index]);
-                      },
-                      onSwipe: _onSwipe,
-                      isLoop: false,
-                    ),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : filteredVacancies.isEmpty
+                      ? const Center(child: Text("No jobs found"))
+                      : CardSwiper(
+                          key: ValueKey(filteredVacancies
+                              .length), // Rebuild if list changes
+                          controller: controller,
+                          cardsCount: filteredVacancies.length,
+                          numberOfCardsDisplayed: filteredVacancies.length < 3
+                              ? filteredVacancies.length
+                              : 3,
+                          backCardOffset: const Offset(0, 40),
+                          padding: const EdgeInsets.all(24.0),
+                          cardBuilder: (context, index, percentThresholdX,
+                              percentThresholdY) {
+                            // Log generic view roughly
+                            _analyticsService.logEvent(AnalyticsEventType.view);
+                            // Verify bounds
+                            if (index >= filteredVacancies.length)
+                              return const SizedBox();
+                            return VacancyCard(
+                                vacancy: filteredVacancies[index]);
+                          },
+                          onSwipe: _onSwipe,
+                          isLoop: false,
+                        ),
             ),
             const SizedBox(height: 16),
             if (filteredVacancies.isNotEmpty)
@@ -179,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (direction == CardSwiperDirection.right) {
       // Save application
-      _userJobService.saveAppliedJob(vacancy.id);
+      _userJobService.saveAppliedJob(vacancy.id, vacancy.employerId);
       _analyticsService.logEvent(AnalyticsEventType.apply);
 
       ScaffoldMessenger.of(context).showSnackBar(

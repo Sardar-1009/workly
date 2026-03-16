@@ -60,6 +60,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text(
           'Messages',
           style: TextStyle(fontWeight: FontWeight.bold),

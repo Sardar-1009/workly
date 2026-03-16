@@ -80,7 +80,7 @@ class _VacancyCardState extends State<VacancyCard> {
                   ),
                   child: Center(
                     child: Text(
-                      widget.vacancy.company.substring(0, 1),
+                      widget.vacancy.company.isNotEmpty ? widget.vacancy.company.substring(0, 1) : '?',
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: theme.colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.bold,

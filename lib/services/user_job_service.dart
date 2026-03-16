@@ -1,85 +1,98 @@
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum ApplicationStatus { sent, invited, rejected }
 
 class UserJobService {
-  // Get current username to use as key prefix
-  Future<String> _getPrefix() async {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Get current user ID (Firebase Auth UID or fallback to username)
+  Future<String> _getUserId() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return user.uid;
+    }
+    // Fallback if not using Firebase Auth yet
     final prefs = await SharedPreferences.getInstance();
     final username = prefs.getString('current_user');
-    if (username == null) return 'guest_';
-    return '${username}_';
+    return username ?? 'guest';
+  }
+
+  Future<DocumentReference> _getUserDoc() async {
+    final userId = await _getUserId();
+    return _firestore.collection('users').doc(userId);
   }
 
   // --- Applied Jobs ---
+  Future<void> saveAppliedJob(String vacancyId, String employerId) async {
+    final userId = await _getUserId();
+    final docRef = _firestore.collection('users').doc(userId);
+    await docRef.set({
+      'applied_jobs': {vacancyId: ApplicationStatus.sent.index}
+    }, SetOptions(merge: true));
 
-  // Stored as Map<String, int> where int is index of enum
-  Future<void> saveAppliedJob(String vacancyId) async {
-    final prefix = await _getPrefix();
-    final prefs = await SharedPreferences.getInstance();
-    final key = '${prefix}applied_jobs_map';
-
-    // Load existing
-    String? jsonString = prefs.getString(key);
-    Map<String, dynamic> appliedMap =
-        jsonString != null ? jsonDecode(jsonString) : {};
-
-    // Add new (default status: sent = 0)
-    appliedMap[vacancyId] = ApplicationStatus.sent.index;
-
-    await prefs.setString(key, jsonEncode(appliedMap));
+    // Also push a global application document so the Employer can read it
+    if (employerId.isNotEmpty) {
+      await _firestore.collection('applications').add({
+        'candidateId': userId,
+        'employerId': employerId,
+        'vacancyId': vacancyId,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
   }
 
   Future<void> updateApplicationStatus(
       String vacancyId, ApplicationStatus status) async {
-    final prefix = await _getPrefix();
-    final prefs = await SharedPreferences.getInstance();
-    final key = '${prefix}applied_jobs_map';
-
-    String? jsonString = prefs.getString(key);
-    Map<String, dynamic> appliedMap =
-        jsonString != null ? jsonDecode(jsonString) : {};
-
-    if (appliedMap.containsKey(vacancyId)) {
-      appliedMap[vacancyId] = status.index;
-      await prefs.setString(key, jsonEncode(appliedMap));
-    }
+    final docRef = await _getUserDoc();
+    await docRef.set({
+      'applied_jobs': {vacancyId: status.index}
+    }, SetOptions(merge: true));
   }
 
   Future<Map<String, ApplicationStatus>> getAppliedJobsMap() async {
-    final prefix = await _getPrefix();
-    final prefs = await SharedPreferences.getInstance();
-    final key = '${prefix}applied_jobs_map';
+    final docRef = await _getUserDoc();
+    final doc = await docRef.get();
+    if (!doc.exists) return {};
 
-    String? jsonString = prefs.getString(key);
-    if (jsonString == null) return {};
+    final data = doc.data() as Map<String, dynamic>?;
+    final appliedJobs = data?['applied_jobs'] as Map<String, dynamic>?;
+    if (appliedJobs == null) return {};
 
-    Map<String, dynamic> rawMap = jsonDecode(jsonString);
-    return rawMap
+    return appliedJobs
         .map((k, v) => MapEntry(k, ApplicationStatus.values[v as int]));
   }
 
+  Future<List<String>> getAppliedJobIds() async {
+    final map = await getAppliedJobsMap();
+    return map.keys.toList();
+  }
+
   // --- Saved (Favorites) ---
-
   Future<void> toggleSavedJob(String vacancyId) async {
-    final prefix = await _getPrefix();
-    final prefs = await SharedPreferences.getInstance();
-    final key = '${prefix}saved_jobs';
-
-    List<String> saved = prefs.getStringList(key) ?? [];
-    if (saved.contains(vacancyId)) {
-      saved.remove(vacancyId);
+    final docRef = await _getUserDoc();
+    final isSaved = await isJobSaved(vacancyId);
+    if (isSaved) {
+      await docRef.update({
+        'saved_jobs': FieldValue.arrayRemove([vacancyId])
+      });
     } else {
-      saved.add(vacancyId);
+      await docRef.set({
+        'saved_jobs': FieldValue.arrayUnion([vacancyId])
+      }, SetOptions(merge: true));
     }
-    await prefs.setStringList(key, saved);
   }
 
   Future<List<String>> getSavedJobs() async {
-    final prefix = await _getPrefix();
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList('${prefix}saved_jobs') ?? [];
+    final docRef = await _getUserDoc();
+    final doc = await docRef.get();
+    if (!doc.exists) return [];
+
+    final data = doc.data() as Map<String, dynamic>?;
+    final savedJobs = data?['saved_jobs'] as List<dynamic>?;
+    return savedJobs?.map((e) => e.toString()).toList() ?? [];
   }
 
   Future<bool> isJobSaved(String vacancyId) async {
@@ -88,24 +101,20 @@ class UserJobService {
   }
 
   // --- Viewed (History) ---
-
   Future<void> markJobViewed(String vacancyId) async {
-    final prefix = await _getPrefix();
-    final prefs = await SharedPreferences.getInstance();
-    final key = '${prefix}viewed_jobs';
-
-    List<String> viewed = prefs.getStringList(key) ?? [];
-    if (!viewed.contains(vacancyId)) {
-      viewed.add(vacancyId); // Add to end
-      await prefs.setStringList(key, viewed);
-    }
+    final docRef = await _getUserDoc();
+    await docRef.set({
+      'viewed_jobs': FieldValue.arrayUnion([vacancyId])
+    }, SetOptions(merge: true));
   }
 
   Future<List<String>> getViewedJobs() async {
-    final prefix = await _getPrefix();
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList('${prefix}viewed_jobs') ?? [];
-  }
+    final docRef = await _getUserDoc();
+    final doc = await docRef.get();
+    if (!doc.exists) return [];
 
-  getAppliedJobIds() {}
+    final data = doc.data() as Map<String, dynamic>?;
+    final viewedJobs = data?['viewed_jobs'] as List<dynamic>?;
+    return viewedJobs?.map((e) => e.toString()).toList() ?? [];
+  }
 }
