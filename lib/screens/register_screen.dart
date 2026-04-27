@@ -16,7 +16,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _authService = AuthService();
@@ -29,7 +28,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final errorMessage = await _authService.register(
         _nameController.text,
         _emailController.text,
-        _usernameController.text,
         _passwordController.text,
       );
 
@@ -105,14 +103,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    CustomTextField(
-                      controller: _usernameController,
-                      label: 'Username',
-                      icon: Icons.person_outline,
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'Required' : null,
-                    ),
-                    const SizedBox(height: 16),
+
                     CustomTextField(
                       controller: _passwordController,
                       label: 'Password',

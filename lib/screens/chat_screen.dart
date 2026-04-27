@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/chat_conversation.dart';
 import '../models/chat_message.dart';
+import '../services/chat_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final ChatConversation conversation;
@@ -14,81 +16,48 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ChatService _chatService = ChatService();
+  
+  String? get currentUserId => FirebaseAuth.instance.currentUser?.uid;
 
-  // Mock data for messages
-  final List<ChatMessage> _messages = [
-    ChatMessage(
-      id: "1",
-      text:
-          "Hi there! I saw your application for the Flutter Developer position.",
-      timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 2)),
-      isMe: false,
-    ),
-    ChatMessage(
-      id: "2",
-      text: "Hello Alex. Yes, I'm very interested in the role at TechCorp Inc.",
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      isMe: true,
-    ),
-    ChatMessage(
-      id: "3",
-      text: "Great! Could you please share your updated resume?",
-      timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
-      isMe: false,
-    ),
-    ChatMessage(
-      id: "4",
-      text: "Thanks for sending your resume. When are you available?",
-      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-      isMe: false,
-    ),
-  ];
-
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
-
-    setState(() {
-      _messages.add(
-        ChatMessage(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          text: _messageController.text.trim(),
-          timestamp: DateTime.now(),
-          isMe: true,
-        ),
-      );
-    });
+  void _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty || currentUserId == null) return;
 
     _messageController.clear();
+    
+    await _chatService.sendMessage(
+      widget.conversation.id,
+      text,
+      currentUserId!,
+    );
+    
     _scrollToBottom();
   }
 
-  void _sendResume() {
-    setState(() {
-      _messages.add(
-        ChatMessage(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          text: "Resume sent",
-          timestamp: DateTime.now(),
-          isMe: true,
-          isSystemMessage: true,
-        ),
-      );
-    });
+  void _sendResume() async {
+    if (currentUserId == null) return;
+    
+    await _chatService.sendMessage(
+      widget.conversation.id,
+      "Resume sent",
+      currentUserId!,
+      isSystemMessage: true,
+    );
+    
     _scrollToBottom();
   }
 
-  void _scheduleInterview() {
-    setState(() {
-      _messages.add(
-        ChatMessage(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          text: "Interview Request Sent",
-          timestamp: DateTime.now(),
-          isMe: true,
-          isSystemMessage: true,
-        ),
-      );
-    });
+  void _scheduleInterview() async {
+    if (currentUserId == null) return;
+    
+    await _chatService.sendMessage(
+      widget.conversation.id,
+      "Interview Request Sent",
+      currentUserId!,
+      isSystemMessage: true,
+    );
+    
     _scrollToBottom();
   }
 
@@ -123,13 +92,48 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           _buildActionButtons(context),
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return _buildMessageBubble(context, message);
+            child: StreamBuilder<List<ChatMessage>>(
+              stream: _chatService.getMessages(widget.conversation.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
+                  );
+                }
+
+                final messages = snapshot.data ?? [];
+                
+                // Ensure scrolled to bottom initially when new messages arrive
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (_scrollController.hasClients &&
+                      _scrollController.position.maxScrollExtent > 0 &&
+                      _scrollController.position.pixels < _scrollController.position.maxScrollExtent) {
+                    _scrollToBottom();
+                  }
+                });
+
+                if (messages.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No messages yet',
+                      style: TextStyle(color: Colors.grey[500]),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    return _buildMessageBubble(context, message);
+                  },
+                );
               },
             ),
           ),
@@ -152,23 +156,6 @@ class _ChatScreenState extends State<ChatScreen> {
                     NetworkImage(widget.conversation.employerAvatarUrl),
                 backgroundColor: Colors.grey[200],
               ),
-              if (widget.conversation.isOnline)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
           const SizedBox(width: 12),
@@ -185,17 +172,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 Text(
-                  widget.conversation.isOnline
-                      ? "Online"
-                      : "Last seen recently",
+                  "Last seen recently",
                   style: TextStyle(
                     fontSize: 12,
-                    color: widget.conversation.isOnline
-                        ? Colors.green
-                        : Colors.grey[600],
-                    fontWeight: widget.conversation.isOnline
-                        ? FontWeight.w500
-                        : FontWeight.normal,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.normal,
                   ),
                 ),
               ],
@@ -278,7 +259,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     }
 
-    final isMe = message.isMe;
+    final isMe = message.senderId == currentUserId;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(

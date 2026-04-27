@@ -65,9 +65,10 @@ class _VacancyCardState extends State<VacancyCard> {
             theme.colorScheme.surfaceContainerHighest,
           ],
         )),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Company and Location + Favorite Button
             Row(
               children: [
@@ -128,7 +129,7 @@ class _VacancyCardState extends State<VacancyCard> {
             const SizedBox(height: 8),
             // Salary
             Text(
-              widget.vacancy.salaryRange,
+              widget.vacancy.salary,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.secondary,
                 fontWeight: FontWeight.w600,
@@ -139,7 +140,7 @@ class _VacancyCardState extends State<VacancyCard> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: widget.vacancy.tags.map((tag) {
+              children: widget.vacancy.skills.map((tag) {
                 return Chip(
                   label: Text(tag),
                   backgroundColor:
@@ -154,14 +155,12 @@ class _VacancyCardState extends State<VacancyCard> {
               }).toList(),
             ),
             const SizedBox(height: 12),
-            // Extra Info (Format/Experience)
+            // Extra Info (Format)
             Wrap(
               spacing: 8,
               children: [
-                _buildBadge(widget.vacancy.workFormat,
+                _buildBadge(widget.vacancy.workType,
                     Colors.blue.withOpacity(0.1), Colors.blue),
-                _buildBadge(widget.vacancy.experience,
-                    Colors.orange.withOpacity(0.1), Colors.orange),
               ],
             ),
 
@@ -169,16 +168,13 @@ class _VacancyCardState extends State<VacancyCard> {
             const Divider(),
             const SizedBox(height: 16),
             // Description
-            Expanded(
-              child: SingleChildScrollView(
-                child: Text(
-                  widget.vacancy.description,
-                  style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
-                ),
-              ),
+            Text(
+              widget.vacancy.description,
+              style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
             ),
           ],
-        ),
+        ),       // Column
+        ),       // SingleChildScrollView
       ),
     );
   }

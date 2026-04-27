@@ -10,7 +10,7 @@ class AuthService {
 
   // Register a new user
   Future<String?> register(
-      String name, String email, String username, String password) async {
+      String fullName, String email, String password) async {
     try {
       // 1. Create user in Firebase Auth
       UserCredential userCredential =
@@ -25,9 +25,13 @@ class AuthService {
         // 2. Save additional user data in Firestore
         await _firestore.collection('users').doc(user.uid).set(
             {
-              'name': name,
+              'fullName': fullName,
               'email': email,
-              'username': username,
+              'skills': [],
+              'experience': '',
+              'education': '',
+              'about': '',
+              'photoUrl': '',
               'createdAt': FieldValue.serverTimestamp(),
             },
             SetOptions(
@@ -96,6 +100,6 @@ class AuthService {
   // Get current user name helper
   Future<String?> getCurrentUserName() async {
     final details = await getCurrentUserDetails();
-    return details?['name'];
+    return details?['fullName'];
   }
 }

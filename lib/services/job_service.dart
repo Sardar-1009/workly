@@ -11,7 +11,11 @@ class JobService {
   }
 
   Future<List<Vacancy>> getVacancies() async {
-    final snapshot = await _firestore.collection('vacancies').get();
-    return snapshot.docs.map((doc) => Vacancy.fromFirestore(doc)).toList();
+    try {
+      final snapshot = await _firestore.collection('vacancies').get();
+      return snapshot.docs.map((doc) => Vacancy.fromFirestore(doc)).toList();
+    } catch (e) {
+      return [];
+    }
   }
 }

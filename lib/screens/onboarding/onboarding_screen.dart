@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import '../../models/user_profile.dart'; // For UserPreferences
+import '../../models/user_profile.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../services/auth_service.dart';
 import '../../main_wrapper.dart';
 import 'steps/onboarding_step_1_experience.dart';
-import 'steps/onboarding_step_2_categories.dart';
-import 'steps/onboarding_step_3_urgency.dart';
-import 'steps/onboarding_step_4_salary.dart';
-import 'steps/onboarding_step_5_priorities.dart';
+import 'steps/onboarding_step_2_skills.dart';
+import 'steps/onboarding_step_3_education.dart';
+import 'steps/onboarding_step_4_about.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -22,19 +22,17 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  final int _totalPages = 5;
+  final int _totalPages = 4;
 
   // Draft State
-  UserPreferences _preferences = UserPreferences();
+  String _experience = '';
+  List<String> _skills = [];
+  String _education = '';
+  String _about = '';
 
   @override
   void initState() {
     super.initState();
-    _loadDraft();
-  }
-
-  Future<void> _loadDraft() async {
-    // TODO: Load draft from SharedPreferences if exists for resilience
   }
 
   void _nextPage() {
@@ -57,24 +55,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
       setState(() => _currentPage--);
     } else {
-      Navigator.of(context)
-          .pop(); // Back from onboarding (shouldn't happen often)
+      Navigator.of(context).pop();
     }
   }
 
   bool _isStepValid() {
     switch (_currentPage) {
       case 0: // Experience
-        return _preferences.experienceLevel.isNotEmpty;
-      case 1: // Categories
-        return _preferences.jobCategories.isNotEmpty &&
-            _preferences.jobCategories.length <= 3;
-      case 2: // Urgency
-        return _preferences.jobUrgency.isNotEmpty;
-      case 3: // Salary
-        return _preferences.salaryMin <= _preferences.salaryMax;
-      case 4: // Priorities
-        return _preferences.jobPriorities.length == 3;
+        return _experience.isNotEmpty;
+      case 1: // Skills
+        return _skills.isNotEmpty;
+      case 2: // Education
+        return _education.isNotEmpty;
+      case 3: // About
+        return _about.isNotEmpty;
       default:
         return false;
     }
@@ -82,7 +76,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _finishOnboarding() async {
     final authService = AuthService();
-    // Identifier used for profile key
     final userDetails = await authService.getCurrentUserDetails();
     final prefs = await SharedPreferences.getInstance();
 
@@ -90,7 +83,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final currentUserId = authUser?.uid;
 
     if (currentUserId != null) {
-      // Load existing profile or create new
       UserProfile profile = UserProfile();
       final profileKey = 'profile_$currentUserId';
       final profileJson = prefs.getString(profileKey);
@@ -98,25 +90,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       if (profileJson != null) {
         profile = UserProfile.fromJson(jsonDecode(profileJson));
       } else {
-        // Create new profile with data from registration
         if (userDetails != null) {
-          profile.name = userDetails['name'] ?? '';
+          profile.fullName = userDetails['fullName'] ?? '';
           profile.email = userDetails['email'] ?? '';
         }
       }
 
-      // Update preferences
-      profile.preferences = _preferences;
-
-      // Sync specific fields to main profile for easy access
-      profile.experience = _preferences.experienceLevel;
-      // You could also sync interests here if you want them to match categories or priorities
-      // profile.interests = _preferences.jobCategories;
-
+      // Update fields
+      profile.experience = _experience;
+      profile.skills = _skills;
+      profile.education = _education;
+      profile.about = _about;
       profile.onboardingCompleted = true;
 
-      // Save
+      // Save locally
       await prefs.setString(profileKey, jsonEncode(profile.toJson()));
+      
+      // Save to Firestore
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(currentUserId).set({
+          'skills': _skills,
+          'experience': _experience,
+          'education': _education,
+          'about': _about,
+          'onboardingCompleted': true,
+        }, SetOptions(merge: true));
+      } catch (e) {
+        debugPrint("Error saving onboarding state to Firestore: $e");
+      }
     }
 
     if (mounted) {
@@ -128,7 +129,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Progress 0.2 ... 1.0
     double progress = (_currentPage + 1) / _totalPages;
 
     return Scaffold(
@@ -167,50 +167,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   OnboardingStep1Experience(
-                    selectedExperience: _preferences.experienceLevel.isEmpty
-                        ? null
-                        : _preferences.experienceLevel,
-                    onSelect: (val) =>
-                        setState(() => _preferences.experienceLevel = val),
+                    selectedExperience: _experience.isEmpty ? null : _experience,
+                    onSelect: (val) => setState(() => _experience = val),
                   ),
-                  OnboardingStep2Categories(
-                    selectedCategories: _preferences.jobCategories,
+                  OnboardingStep2Skills(
+                    selectedSkills: _skills,
                     onToggle: (val) {
                       setState(() {
-                        if (_preferences.jobCategories.contains(val)) {
-                          _preferences.jobCategories.remove(val);
+                        if (_skills.contains(val)) {
+                          _skills.remove(val);
                         } else {
-                          _preferences.jobCategories.add(val);
+                          _skills.add(val);
                         }
                       });
                     },
                   ),
-                  OnboardingStep3Urgency(
-                    selectedUrgency: _preferences.jobUrgency.isEmpty
-                        ? null
-                        : _preferences.jobUrgency,
-                    onSelect: (val) =>
-                        setState(() => _preferences.jobUrgency = val),
+                  OnboardingStep3Education(
+                    selectedEducation: _education.isEmpty ? null : _education,
+                    onSelect: (val) => setState(() => _education = val),
                   ),
-                  OnboardingStep4Salary(
-                    salaryMin: _preferences.salaryMin,
-                    salaryMax: _preferences.salaryMax,
-                    onRangeChanged: (min, max) => setState(() {
-                      _preferences.salaryMin = min;
-                      _preferences.salaryMax = max;
-                    }),
-                  ),
-                  OnboardingStep5Priorities(
-                    selectedPriorities: _preferences.jobPriorities,
-                    onToggle: (val) {
-                      setState(() {
-                        if (_preferences.jobPriorities.contains(val)) {
-                          _preferences.jobPriorities.remove(val);
-                        } else {
-                          _preferences.jobPriorities.add(val);
-                        }
-                      });
-                    },
+                  OnboardingStep4About(
+                    aboutText: _about,
+                    onChanged: (val) => setState(() => _about = val),
                   ),
                 ],
               ),

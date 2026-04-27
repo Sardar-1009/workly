@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
 
-class OnboardingStep2Categories extends StatelessWidget {
-  final List<String> selectedCategories;
+class OnboardingStep2Skills extends StatelessWidget {
+  final List<String> selectedSkills;
   final Function(String) onToggle;
 
-  const OnboardingStep2Categories({
+  const OnboardingStep2Skills({
     super.key,
-    required this.selectedCategories,
+    required this.selectedSkills,
     required this.onToggle,
   });
 
-  final List<String> _categories = const [
-    'Software Engineering',
-    'Healthcare',
-    'Consulting',
-    'Data',
-    'Design',
-    'Finance',
-    'Legal',
-    'Human Resources',
+  final List<String> _skills = const [
+    'Flutter',
+    'Dart',
+    'React',
+    'JavaScript',
+    'TypeScript',
+    'Python',
+    'Java',
+    'Kotlin',
+    'Swift',
+    'Node.js',
+    'Firebase',
+    'SQL',
+    'UI/UX Design',
+    'Product Management',
     'Marketing',
-    'Operations & Strategy',
-    'Product',
-    'Sales',
-    'Customer Success',
-    'Security',
-    'Misc. Engineering',
   ];
 
   @override
@@ -34,14 +34,14 @@ class OnboardingStep2Categories extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'What kind of job are you looking for?',
+          'What are your top skills?',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
         const SizedBox(height: 8),
         Text(
-          'Select up to 3 job categories that interest you most.',
+          'Select up to 5 skills.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Colors.grey,
               ),
@@ -52,22 +52,22 @@ class OnboardingStep2Categories extends StatelessWidget {
             child: Wrap(
               spacing: 12,
               runSpacing: 12,
-              children: _categories.map((category) {
-                final isSelected = selectedCategories.contains(category);
+              children: _skills.map((skill) {
+                final isSelected = selectedSkills.contains(skill);
                 return FilterChip(
-                  label: Text(category),
+                  label: Text(skill),
                   selected: isSelected,
                   onSelected: (selected) {
-                    if (selected && selectedCategories.length >= 3) {
+                    if (selected && selectedSkills.length >= 5) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('You can select up to 3 categories'),
+                          content: Text('You can select up to 5 skills'),
                           duration: Duration(seconds: 1),
                         ),
                       );
                       return;
                     }
-                    onToggle(category);
+                    onToggle(skill);
                   },
                   backgroundColor: Theme.of(context).colorScheme.surface,
                   selectedColor: Theme.of(context).colorScheme.primaryContainer,

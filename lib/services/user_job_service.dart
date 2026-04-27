@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum ApplicationStatus { sent, invited, rejected }
-
 class UserJobService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -26,73 +24,103 @@ class UserJobService {
 
   // --- Applied Jobs ---
   Future<void> saveAppliedJob(String vacancyId, String employerId) async {
-    final userId = await _getUserId();
-    final docRef = _firestore.collection('users').doc(userId);
-    await docRef.set({
-      'applied_jobs': {vacancyId: ApplicationStatus.sent.index}
-    }, SetOptions(merge: true));
+    try {
+      final userId = await _getUserId();
 
-    // Also push a global application document so the Employer can read it
-    if (employerId.isNotEmpty) {
-      await _firestore.collection('applications').add({
-        'candidateId': userId,
-        'employerId': employerId,
-        'vacancyId': vacancyId,
-        'status': 'pending',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      // Use a unique document ID to prevent duplicate applications for the same user and vacancy
+      final applicationId = '${userId}_$vacancyId';
+
+      if (employerId.isNotEmpty) {
+        await _firestore.collection('applications').doc(applicationId).set({
+          'userId': userId,
+          'employerId': employerId,
+          'vacancyId': vacancyId,
+          'status': 'pending',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      // Ignore permission errors silently for UI stability
     }
   }
 
-  Future<void> updateApplicationStatus(
-      String vacancyId, ApplicationStatus status) async {
-    final docRef = await _getUserDoc();
-    await docRef.set({
-      'applied_jobs': {vacancyId: status.index}
-    }, SetOptions(merge: true));
+  Future<void> updateApplicationStatus(String vacancyId, String status) async {
+    try {
+      final userId = await _getUserId();
+      // In a real app, this should only be done by Employers. We do it here for demo/testing.
+      final query = await _firestore
+          .collection('applications')
+          .where('userId', isEqualTo: userId)
+          .where('vacancyId', isEqualTo: vacancyId)
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        await query.docs.first.reference.update({'status': status});
+      }
+    } catch (e) {
+      // Ignore errors silently for UI stability
+    }
   }
 
-  Future<Map<String, ApplicationStatus>> getAppliedJobsMap() async {
-    final docRef = await _getUserDoc();
-    final doc = await docRef.get();
-    if (!doc.exists) return {};
+  Future<Map<String, String>> getAppliedJobsStatusMap() async {
+    try {
+      final userId = await _getUserId();
+      final querySnapshot = await _firestore
+          .collection('applications')
+          .where('userId', isEqualTo: userId)
+          .get();
 
-    final data = doc.data() as Map<String, dynamic>?;
-    final appliedJobs = data?['applied_jobs'] as Map<String, dynamic>?;
-    if (appliedJobs == null) return {};
-
-    return appliedJobs
-        .map((k, v) => MapEntry(k, ApplicationStatus.values[v as int]));
+      final Map<String, String> statusMap = {};
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+        final vacancyId = data['vacancyId'] as String?;
+        final status = data['status'] as String? ?? 'pending';
+        if (vacancyId != null) {
+          statusMap[vacancyId] = status;
+        }
+      }
+      return statusMap;
+    } catch (e) {
+      return {};
+    }
   }
 
   Future<List<String>> getAppliedJobIds() async {
-    final map = await getAppliedJobsMap();
+    final map = await getAppliedJobsStatusMap();
     return map.keys.toList();
   }
 
   // --- Saved (Favorites) ---
   Future<void> toggleSavedJob(String vacancyId) async {
-    final docRef = await _getUserDoc();
-    final isSaved = await isJobSaved(vacancyId);
-    if (isSaved) {
-      await docRef.update({
-        'saved_jobs': FieldValue.arrayRemove([vacancyId])
-      });
-    } else {
-      await docRef.set({
-        'saved_jobs': FieldValue.arrayUnion([vacancyId])
-      }, SetOptions(merge: true));
+    try {
+      final docRef = await _getUserDoc();
+      final isSaved = await isJobSaved(vacancyId);
+      if (isSaved) {
+        await docRef.update({
+          'saved_jobs': FieldValue.arrayRemove([vacancyId])
+        });
+      } else {
+        await docRef.set({
+          'saved_jobs': FieldValue.arrayUnion([vacancyId])
+        }, SetOptions(merge: true));
+      }
+    } catch (e) {
+      // Ignore errors silently
     }
   }
 
   Future<List<String>> getSavedJobs() async {
-    final docRef = await _getUserDoc();
-    final doc = await docRef.get();
-    if (!doc.exists) return [];
+    try {
+      final docRef = await _getUserDoc();
+      final doc = await docRef.get();
+      if (!doc.exists) return [];
 
-    final data = doc.data() as Map<String, dynamic>?;
-    final savedJobs = data?['saved_jobs'] as List<dynamic>?;
-    return savedJobs?.map((e) => e.toString()).toList() ?? [];
+      final data = doc.data() as Map<String, dynamic>?;
+      final savedJobs = data?['saved_jobs'] as List<dynamic>?;
+      return savedJobs?.map((e) => e.toString()).toList() ?? [];
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<bool> isJobSaved(String vacancyId) async {
@@ -102,19 +130,53 @@ class UserJobService {
 
   // --- Viewed (History) ---
   Future<void> markJobViewed(String vacancyId) async {
-    final docRef = await _getUserDoc();
-    await docRef.set({
-      'viewed_jobs': FieldValue.arrayUnion([vacancyId])
-    }, SetOptions(merge: true));
+    try {
+      final docRef = await _getUserDoc();
+      await docRef.set({
+        'viewed_jobs': FieldValue.arrayUnion([vacancyId])
+      }, SetOptions(merge: true));
+    } catch (e) {
+      // Ignore errors
+    }
   }
 
   Future<List<String>> getViewedJobs() async {
-    final docRef = await _getUserDoc();
-    final doc = await docRef.get();
-    if (!doc.exists) return [];
+    try {
+      final docRef = await _getUserDoc();
+      final doc = await docRef.get();
+      if (!doc.exists) return [];
 
-    final data = doc.data() as Map<String, dynamic>?;
-    final viewedJobs = data?['viewed_jobs'] as List<dynamic>?;
-    return viewedJobs?.map((e) => e.toString()).toList() ?? [];
+      final data = doc.data() as Map<String, dynamic>?;
+      final viewedJobs = data?['viewed_jobs'] as List<dynamic>?;
+      return viewedJobs?.map((e) => e.toString()).toList() ?? [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // --- Skipped Jobs ---
+  Future<void> markJobSkipped(String vacancyId) async {
+    try {
+      final docRef = await _getUserDoc();
+      await docRef.set({
+        'skipped_jobs': FieldValue.arrayUnion([vacancyId])
+      }, SetOptions(merge: true));
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+
+  Future<List<String>> getSkippedJobIds() async {
+    try {
+      final docRef = await _getUserDoc();
+      final doc = await docRef.get();
+      if (!doc.exists) return [];
+
+      final data = doc.data() as Map<String, dynamic>?;
+      final skippedJobs = data?['skipped_jobs'] as List<dynamic>?;
+      return skippedJobs?.map((e) => e.toString()).toList() ?? [];
+    } catch (e) {
+      return [];
+    }
   }
 }

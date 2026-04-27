@@ -1,97 +1,63 @@
-class UserPreferences {
-  String experienceLevel;
-  List<String> jobCategories;
-  String jobUrgency;
-  int salaryMin;
-  int salaryMax;
-  List<String> jobPriorities;
-
-  UserPreferences({
-    this.experienceLevel = '',
-    List<String>? jobCategories,
-    this.jobUrgency = '',
-    this.salaryMin = 0,
-    this.salaryMax = 500000,
-    List<String>? jobPriorities,
-  })  : jobCategories = jobCategories ?? [],
-        jobPriorities = jobPriorities ?? [];
-
-  Map<String, dynamic> toJson() => {
-        'experienceLevel': experienceLevel,
-        'jobCategories': jobCategories,
-        'jobUrgency': jobUrgency,
-        'salaryMin': salaryMin,
-        'salaryMax': salaryMax,
-        'jobPriorities': jobPriorities,
-      };
-
-  factory UserPreferences.fromJson(Map<String, dynamic> json) {
-    return UserPreferences(
-      experienceLevel: json['experienceLevel'] ?? '',
-      jobCategories: List<String>.from(json['jobCategories'] ?? []),
-      jobUrgency: json['jobUrgency'] ?? '',
-      salaryMin: json['salaryMin'] ?? 0,
-      salaryMax: json['salaryMax'] ?? 500000,
-      jobPriorities: List<String>.from(json['jobPriorities'] ?? []),
-    );
-  }
-}
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProfile {
-  String name;
-  String surname;
+  String fullName;
   String email;
+  List<String> skills;
   String experience;
-  List<String> interests;
-  String? resumePath;
-  String? resumeSize;
-  String? resumeDate;
+  String education;
+  String about;
+  String photoUrl;
+  String resumeUrl;       // URL загруженного резюме в Firebase Storage
+  String resumeFileName;  // Оригинальное имя файла резюме
+  DateTime? createdAt;
 
-  // Onboarding Data
+  // Local helper
   bool onboardingCompleted;
-  UserPreferences preferences;
 
   UserProfile({
-    this.name = '',
-    this.surname = '',
+    this.fullName = '',
     this.email = '',
-    this.experience = 'No Experience',
-    List<String>? interests,
-    this.resumePath,
-    this.resumeSize,
-    this.resumeDate,
+    List<String>? skills,
+    this.experience = '',
+    this.education = '',
+    this.about = '',
+    this.photoUrl = '',
+    this.resumeUrl = '',
+    this.resumeFileName = '',
+    this.createdAt,
     this.onboardingCompleted = false,
-    UserPreferences? preferences,
-  })  : interests = interests ?? [],
-        preferences = preferences ?? UserPreferences();
+  }) : skills = skills ?? [];
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'surname': surname,
+        'fullName': fullName,
         'email': email,
+        'skills': skills,
         'experience': experience,
-        'interests': interests,
-        'resumePath': resumePath,
-        'resumeSize': resumeSize,
-        'resumeDate': resumeDate,
+        'education': education,
+        'about': about,
+        'photoUrl': photoUrl,
+        'resumeUrl': resumeUrl,
+        'resumeFileName': resumeFileName,
+        if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
         'onboardingCompleted': onboardingCompleted,
-        'preferences': preferences.toJson(),
       };
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      name: json['name'] ?? '',
-      surname: json['surname'] ?? '',
+      fullName: json['fullName'] ?? json['name'] ?? '',
       email: json['email'] ?? '',
-      experience: json['experience'] ?? 'No Experience',
-      interests: List<String>.from(json['interests'] ?? []),
-      resumePath: json['resumePath'],
-      resumeSize: json['resumeSize'],
-      resumeDate: json['resumeDate'],
-      onboardingCompleted: json['onboardingCompleted'] ?? false,
-      preferences: json['preferences'] != null
-          ? UserPreferences.fromJson(json['preferences'])
+      skills: List<String>.from(json['skills'] ?? []),
+      experience: json['experience'] ?? '',
+      education: json['education'] ?? '',
+      about: json['about'] ?? '',
+      photoUrl: json['photoUrl'] ?? '',
+      resumeUrl: json['resumeUrl'] ?? '',
+      resumeFileName: json['resumeFileName'] ?? '',
+      createdAt: json['createdAt'] != null
+          ? (json['createdAt'] as Timestamp).toDate()
           : null,
+      onboardingCompleted: json['onboardingCompleted'] ?? false,
     );
   }
 }

@@ -21,7 +21,7 @@ class _HistoryScreenState extends State<HistoryScreen>
   // Data
   List<Vacancy> _viewed = [];
   List<Vacancy> _saved = [];
-  Map<String, ApplicationStatus> _appliedMap = {};
+  Map<String, String> _appliedMap = {};
   List<Vacancy> _applied = [];
 
   bool _isLoading = true;
@@ -39,7 +39,7 @@ class _HistoryScreenState extends State<HistoryScreen>
     // Fetch IDs
     final viewedIds = await _userJobService.getViewedJobs();
     final savedIds = await _userJobService.getSavedJobs();
-    final appliedMap = await _userJobService.getAppliedJobsMap();
+    final appliedMap = await _userJobService.getAppliedJobsStatusMap();
     _allVacancies = await _jobService.getVacancies();
 
     // Map to Objects
@@ -54,11 +54,11 @@ class _HistoryScreenState extends State<HistoryScreen>
     }
   }
 
-  Future<void> _updateStatus(String vacancyId, ApplicationStatus status) async {
+  Future<void> _updateStatus(String vacancyId, String status) async {
     await _userJobService.updateApplicationStatus(vacancyId, status);
 
     // Log "Accepted" event if status is invited
-    if (status == ApplicationStatus.invited) {
+    if (status == 'invited') {
       await AnalyticsService().logEvent(AnalyticsEventType.accepted);
     }
 
@@ -132,14 +132,14 @@ class _HistoryScreenState extends State<HistoryScreen>
       padding: const EdgeInsets.all(16),
       itemBuilder: (context, index) {
         final vacancy = _applied[index];
-        final status = _appliedMap[vacancy.id] ?? ApplicationStatus.sent;
+        final status = _appliedMap[vacancy.id] ?? 'pending';
 
         Color statusColor = Colors.grey;
-        String statusText = 'Sent';
-        if (status == ApplicationStatus.invited) {
+        String statusText = 'Pending';
+        if (status == 'accepted' || status == 'invited') {
           statusColor = Colors.green;
-          statusText = 'Invited';
-        } else if (status == ApplicationStatus.rejected) {
+          statusText = 'Accepted / Invited';
+        } else if (status == 'rejected') {
           statusColor = Colors.red;
           statusText = 'Rejected';
         }
@@ -164,12 +164,12 @@ class _HistoryScreenState extends State<HistoryScreen>
                   children: [
                     TextButton(
                       onPressed: () =>
-                          _updateStatus(vacancy.id, ApplicationStatus.invited),
+                          _updateStatus(vacancy.id, 'invited'),
                       child: const Text('Mark Invited'),
                     ),
                     TextButton(
                       onPressed: () =>
-                          _updateStatus(vacancy.id, ApplicationStatus.rejected),
+                          _updateStatus(vacancy.id, 'rejected'),
                       child: const Text('Mark Rejected',
                           style: TextStyle(color: Colors.red)),
                     ),

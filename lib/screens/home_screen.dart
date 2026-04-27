@@ -39,11 +39,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadVacancies() async {
     try {
       final fetchedVacancies = await _jobService.getVacancies();
+      final appliedIds = await _userJobService.getAppliedJobIds();
+      final skippedIds = await _userJobService.getSkippedJobIds();
+
       setState(() {
-        allVacancies = fetchedVacancies;
+        // Filter out vacancies that the user has already interacted with
+        allVacancies = fetchedVacancies.where((v) {
+          return !appliedIds.contains(v.id) && !skippedIds.contains(v.id);
+        }).toList();
+
         filteredVacancies = List.from(allVacancies);
         isLoading = false;
       });
+
       // Mark first vacancy as viewed immediately when screen loads
       if (filteredVacancies.isNotEmpty) {
         _userJobService.markJobViewed(filteredVacancies[0].id);
@@ -68,14 +76,10 @@ class _HomeScreenState extends State<HomeScreen> {
         if (_currentFilters != null) {
           // Work Format
           if (_currentFilters!.workFormat != null &&
-              v.workFormat != _currentFilters!.workFormat) {
+              v.workType != _currentFilters!.workFormat) {
             return false;
           }
-          // Experience
-          if (_currentFilters!.experience != null &&
-              v.experience != _currentFilters!.experience) {
-            return false;
-          }
+          // Experience filter removed from vacancy but can be matched against skills in the future
           // Salary logic skipped for MVP simplicity (parsing strings is fragile)
         }
 
@@ -208,6 +212,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     } else if (direction == CardSwiperDirection.left) {
+      // Mark as skipped so it doesn't appear again
+      _userJobService.markJobSkipped(vacancy.id);
+      _analyticsService.logEvent(AnalyticsEventType.swipe);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Passed on ${vacancy.company}'),

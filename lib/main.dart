@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:workly/firebase_options.dart';
 import 'main_wrapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'screens/login_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -87,6 +88,21 @@ class AuthWrapper extends StatelessWidget {
   }
 
   Future<bool> _checkOnboarding(String uid) async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null && data.containsKey('onboardingCompleted')) {
+          final isOnboarded = data['onboardingCompleted'] == true;
+          if (isOnboarded) {
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Firestore read error checking onboarding: $e');
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final profileJson = prefs.getString('profile_$uid');
 

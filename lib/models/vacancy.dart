@@ -2,47 +2,47 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Vacancy {
   final String id;
+  final String employerId;
   final String title;
-  final String company;
-  final String location;
-  final String salaryRange;
   final String description;
-  final List<String> tags;
+  final String salary;
+  final String location;
+  final String workType;
+  final List<String> skills;
+  final DateTime? createdAt;
+  
+  // UI Helpers (Might be missing from strict DB schema but useful locally)
+  final String company;
   final String? companyLogoUrl;
-
-  // New Fields for Filters
-  final String workFormat; // Remote, Office, Hybrid
-  final String experience; // 0-1, 1-3, 3-5, 5+
-  final String employerId; // Add employerId field
 
   const Vacancy({
     required this.id,
+    required this.employerId,
     required this.title,
-    required this.company,
-    required this.location,
-    required this.salaryRange,
     required this.description,
-    required this.tags,
+    required this.salary,
+    required this.location,
+    required this.workType,
+    required this.skills,
+    this.createdAt,
+    this.company = 'Company Name',
     this.companyLogoUrl,
-    this.workFormat = 'Office',
-    this.experience = '1-3 years',
-    this.employerId = '',
   });
 
   factory Vacancy.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Vacancy(
       id: doc.id,
-      title: data['title'] ?? '',
-      company: data['company'] ?? 'Company Name',
-      location: data['location'] ?? '',
-      salaryRange: data['salaryRange'] ?? data['salary'] ?? '',
-      description: data['description'] ?? '',
-      tags: List<String>.from(data['tags'] ?? data['requirements'] ?? []),
-      companyLogoUrl: data['companyLogoUrl'],
-      workFormat: data['workFormat'] ?? 'Office',
-      experience: data['experience'] ?? '1-3 years',
       employerId: data['employerId'] ?? '',
+      title: data['title'] ?? '',
+      description: data['description'] ?? '',
+      salary: data['salary'] ?? data['salaryRange'] ?? '',
+      location: data['location'] ?? '',
+      workType: data['workType'] ?? data['workFormat'] ?? 'Office',
+      skills: List<String>.from(data['skills'] ?? data['tags'] ?? []),
+      createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : null,
+      company: data['company'] ?? 'Company Name', // Kept for backwards compatibility
+      companyLogoUrl: data['companyLogoUrl'],
     );
   }
 }

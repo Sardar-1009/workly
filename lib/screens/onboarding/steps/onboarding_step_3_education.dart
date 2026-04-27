@@ -1,36 +1,23 @@
 import 'package:flutter/material.dart';
 
-class OnboardingStep3Urgency extends StatelessWidget {
-  final String? selectedUrgency;
+class OnboardingStep3Education extends StatelessWidget {
+  final String? selectedEducation;
   final ValueChanged<String> onSelect;
 
-  const OnboardingStep3Urgency({
+  const OnboardingStep3Education({
     super.key,
-    required this.selectedUrgency,
+    required this.selectedEducation,
     required this.onSelect,
   });
 
   final List<String> _options = const [
-    '1 month',
-    '3 months',
-    '6 months',
-    '12 months+',
+    'High School',
+    'Associate Degree',
+    'Bachelor\'s Degree',
+    'Master\'s Degree',
+    'PhD or equivalent',
+    'Self-taught / Bootcamp',
   ];
-
-  String _getSubtitle(String option) {
-    switch (option) {
-      case '1 month':
-        return 'Get me a job now!';
-      case '3 months':
-        return 'I have some time';
-      case '6 months':
-        return 'Maximize my options';
-      case '12 months+':
-        return 'Seeing what’s out there';
-      default:
-        return '';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +25,14 @@ class OnboardingStep3Urgency extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'When do you need a new job?',
+          'What is your highest level of education?',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
         const SizedBox(height: 8),
         Text(
-          'This will be used to calibrate your custom plan.',
+          'Employers often filter by education level.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Colors.grey,
               ),
@@ -57,7 +44,7 @@ class OnboardingStep3Urgency extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final option = _options[index];
-              final isSelected = option == selectedUrgency;
+              final isSelected = option == selectedEducation;
               return InkWell(
                 onTap: () => onSelect(option),
                 borderRadius: BorderRadius.circular(12),
@@ -78,33 +65,15 @@ class OnboardingStep3Urgency extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              option,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: isSelected
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .onPrimaryContainer
-                                    : Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                            Text(
-                              _getSubtitle(option),
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .onPrimaryContainer
-                                        .withOpacity(0.8)
-                                    : Colors.grey,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          option,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: isSelected
+                                ? Theme.of(context).colorScheme.onPrimaryContainer
+                                : Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                       ),
                       if (isSelected)

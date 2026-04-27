@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/chat_conversation.dart';
+import '../services/chat_service.dart';
 import 'chat_screen.dart';
 
 class ChatListScreen extends StatefulWidget {
@@ -10,40 +12,8 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
-  // Mock data for conversations
-  final List<ChatConversation> conversations = [
-    ChatConversation(
-      id: "1",
-      employerName: "Alex Johnson",
-      companyName: "TechCorp Inc.",
-      employerAvatarUrl: "https://i.pravatar.cc/150?img=11",
-      lastMessageText:
-          "Thanks for sending your resume. When are you available?",
-      lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),
-      unreadCount: 2,
-      isOnline: true,
-    ),
-    ChatConversation(
-      id: "2",
-      employerName: "Sarah Davis",
-      companyName: "Innovate Solutions",
-      employerAvatarUrl: "https://i.pravatar.cc/150?img=5",
-      lastMessageText: "We would like to schedule an interview.",
-      lastMessageTime: DateTime.now().subtract(const Duration(hours: 2)),
-      unreadCount: 0,
-      isOnline: false,
-    ),
-    ChatConversation(
-      id: "3",
-      employerName: "Michael Brown",
-      companyName: "Globex",
-      employerAvatarUrl: "https://i.pravatar.cc/150?img=33",
-      lastMessageText: "Your application is under review.",
-      lastMessageTime: DateTime.now().subtract(const Duration(days: 1)),
-      unreadCount: 0,
-      isOnline: true,
-    ),
-  ];
+  final ChatService _chatService = ChatService();
+  String? get currentUserId => FirebaseAuth.instance.currentUser?.uid;
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();
@@ -58,6 +28,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userId = currentUserId;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -75,13 +47,34 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
         ],
       ),
-      body: conversations.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              itemCount: conversations.length,
-              itemBuilder: (context, index) {
-                final chat = conversations[index];
-                return _buildChatTile(context, chat);
+      body: userId == null
+          ? const Center(child: Text("Пожалуйста, войдите в систему"))
+          : StreamBuilder<List<ChatConversation>>(
+              stream: _chatService.getUserConversations(userId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
+                  );
+                }
+
+                final conversations = snapshot.data ?? [];
+
+                if (conversations.isEmpty) {
+                  return _buildEmptyState();
+                }
+
+                return ListView.builder(
+                  itemCount: conversations.length,
+                  itemBuilder: (context, index) {
+                    final chat = conversations[index];
+                    return _buildChatTile(context, chat);
+                  },
+                );
               },
             ),
     );
@@ -122,6 +115,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget _buildChatTile(BuildContext context, ChatConversation chat) {
     return InkWell(
       onTap: () {
+        // Mark as read when opening
+        _chatService.markAsRead(chat.id);
+        
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -140,23 +136,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
                   backgroundImage: NetworkImage(chat.employerAvatarUrl),
                   backgroundColor: Colors.grey[200],
                 ),
-                if (chat.isOnline)
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
             const SizedBox(width: 16),
@@ -181,11 +160,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
                       Text(
                         _formatTime(chat.lastMessageTime),
                         style: TextStyle(
-                          color: chat.unreadCount > 0
+                          color: chat.unreadCountUser > 0
                               ? Theme.of(context).colorScheme.primary
                               : Colors.grey[500],
                           fontSize: 12,
-                          fontWeight: chat.unreadCount > 0
+                          fontWeight: chat.unreadCountUser > 0
                               ? FontWeight.bold
                               : FontWeight.normal,
                         ),
@@ -215,12 +194,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          chat.lastMessageText,
+                          chat.lastMessage,
                           style: TextStyle(
-                            color: chat.unreadCount > 0
+                            color: chat.unreadCountUser > 0
                                 ? Theme.of(context).colorScheme.onSurface
                                 : Colors.grey[600],
-                            fontWeight: chat.unreadCount > 0
+                            fontWeight: chat.unreadCountUser > 0
                                 ? FontWeight.w600
                                 : FontWeight.normal,
                             fontSize: 14,
@@ -229,7 +208,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (chat.unreadCount > 0) ...[
+                      if (chat.unreadCountUser > 0) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -241,7 +220,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            chat.unreadCount.toString(),
+                            chat.unreadCountUser.toString(),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
