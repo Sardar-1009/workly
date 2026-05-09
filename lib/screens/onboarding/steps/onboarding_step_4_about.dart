@@ -16,14 +16,14 @@ class OnboardingStep4About extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Tell us about yourself',
+          'Расскажите о себе',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
         const SizedBox(height: 8),
         Text(
-          'A short bio helps employers understand who you are and what you stand for.',
+          'Краткое био поможет работодателям понять, кто вы и в чем ваши сильные стороны.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Colors.grey,
               ),
@@ -38,7 +38,7 @@ class OnboardingStep4About extends StatelessWidget {
               maxLines: 8,
               maxLength: 500,
               decoration: InputDecoration(
-                hintText: 'I am a passionate developer with 5 years of experience in...',
+                hintText: 'Я страстный разработчик с 5-летним опытом в...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey.shade300),

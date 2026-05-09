@@ -11,9 +11,9 @@ class AppTheme {
       ),
       textTheme: GoogleFonts.interTextTheme(),
       scaffoldBackgroundColor: Colors.grey[50],
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
         clipBehavior: Clip.antiAlias,
       ),
     );
@@ -28,9 +28,9 @@ class AppTheme {
       ),
       textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
       scaffoldBackgroundColor: const Color(0xFF121212),
-       cardTheme: CardTheme(
+       cardTheme: const CardThemeData(
         elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
         clipBehavior: Clip.antiAlias,
       ),
     );

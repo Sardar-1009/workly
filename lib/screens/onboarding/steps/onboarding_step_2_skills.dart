@@ -34,14 +34,14 @@ class OnboardingStep2Skills extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'What are your top skills?',
+          'Какие у вас ключевые навыки?',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
         const SizedBox(height: 8),
         Text(
-          'Select up to 5 skills.',
+          'Выберите до 5 навыков.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Colors.grey,
               ),
@@ -61,7 +61,7 @@ class OnboardingStep2Skills extends StatelessWidget {
                     if (selected && selectedSkills.length >= 5) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('You can select up to 5 skills'),
+                          content: Text('Можно выбрать не более 5 навыков'),
                           duration: Duration(seconds: 1),
                         ),
                       );

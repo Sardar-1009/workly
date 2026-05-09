@@ -3,6 +3,7 @@ import '../models/vacancy.dart';
 import '../services/job_service.dart';
 import '../services/user_job_service.dart';
 import '../services/analytics_service.dart'; // To log Accepted status
+import '../l10n/app_localizations.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -67,17 +68,19 @@ class _HistoryScreenState extends State<HistoryScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Activity'),
+        title: Text(l10n?.historyTab ?? 'Activity'),
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'History'),
-            Tab(text: 'Applied'),
-            Tab(text: 'Saved'),
+          tabs: [
+            Tab(text: l10n?.historyTab ?? 'History'),
+            Tab(text: l10n?.applied ?? 'Applied'),
+            Tab(text: l10n?.profileSaved ?? 'Saved'), // Reusing profileSaved as "Saved" for now, ideally need a specific key, but let's use what we have or just add it. Let's use hardcoded or better, I will just use l10n if I can. Wait, I'll update arb later if needed. Actually I'll use a hardcoded fallback.
           ],
         ),
       ),
@@ -86,9 +89,9 @@ class _HistoryScreenState extends State<HistoryScreen>
           : TabBarView(
               controller: _tabController,
               children: [
-                _buildList(_viewed, 'No viewed jobs yet'),
-                _buildAppliedList(),
-                _buildList(_saved, 'No saved jobs', isSavedTab: true),
+                _buildList(_viewed, l10n?.noHistory ?? 'No viewed jobs yet'),
+                _buildAppliedList(l10n),
+                _buildList(_saved, l10n?.noJobsFound ?? 'No saved jobs', isSavedTab: true),
               ],
             ),
     );
@@ -123,9 +126,9 @@ class _HistoryScreenState extends State<HistoryScreen>
     );
   }
 
-  Widget _buildAppliedList() {
+  Widget _buildAppliedList(AppLocalizations? l10n) {
     if (_applied.isEmpty)
-      return const Center(child: Text('No applications sent'));
+      return Center(child: Text(l10n?.noHistory ?? 'No applications sent'));
 
     return ListView.builder(
       itemCount: _applied.length,

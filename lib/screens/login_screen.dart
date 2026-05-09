@@ -4,6 +4,7 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/primary_button.dart';
 import '../main_wrapper.dart';
 import 'register_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,6 +49,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -67,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Welcome Back!',
+                      l10n?.loginTitle ?? 'Добро пожаловать!',
                       textAlign: TextAlign.center,
                       style:
                           Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -76,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Login to continue your job search',
+                      l10n?.loginSubtitle ?? 'Войдите, чтобы найти работу мечты',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Colors.grey[600],
@@ -85,37 +88,37 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 48),
                     CustomTextField(
                       controller: _usernameController,
-                      label: 'Username',
+                      label: l10n?.emailLabel ?? 'Email',
                       icon: Icons.person_outline,
                       validator: (value) {
                         return value == null || value.isEmpty
-                            ? 'Required'
+                            ? 'Обязательное поле'
                             : null;
                       },
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
                       controller: _passwordController,
-                      label: 'Password',
+                      label: l10n?.passwordLabel ?? 'Пароль',
                       icon: Icons.lock_outline,
                       isPassword: true,
                       validator: (value) {
                         return value == null || value.isEmpty
-                            ? 'Required'
+                            ? 'Обязательное поле'
                             : null;
                       },
                     ),
                     const SizedBox(height: 24),
                     PrimaryButton(
                       onPressed: _login,
-                      text: 'Login',
+                      text: l10n?.loginButton ?? 'Войти',
                       isLoading: _isLoading,
                     ),
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Don't have an account?"),
+                        Text(l10n?.noAccount ?? "Нет аккаунта?"),
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).push(
@@ -124,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
                           },
-                          child: const Text('Register'),
+                          child: Text(l10n?.registerLink ?? 'Зарегистрироваться'),
                         ),
                       ],
                     ),

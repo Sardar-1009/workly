@@ -11,12 +11,12 @@ class OnboardingStep3Education extends StatelessWidget {
   });
 
   final List<String> _options = const [
-    'High School',
-    'Associate Degree',
-    'Bachelor\'s Degree',
-    'Master\'s Degree',
-    'PhD or equivalent',
-    'Self-taught / Bootcamp',
+    'Среднее образование',
+    'Среднее специальное',
+    'Бакалавр',
+    'Магистр',
+    'Кандидат наук / Доктор',
+    'Самоучка / Курсы',
   ];
 
   @override
@@ -25,14 +25,14 @@ class OnboardingStep3Education extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'What is your highest level of education?',
+          'Какое у вас образование?',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
         const SizedBox(height: 8),
         Text(
-          'Employers often filter by education level.',
+          'Работодатели часто фильтруют по уровню образования.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Colors.grey,
               ),

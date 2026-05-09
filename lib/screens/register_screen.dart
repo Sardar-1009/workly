@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/primary_button.dart';
-
 import 'onboarding/onboarding_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -51,6 +51,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -68,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Create Account',
+                      l10n?.registerTitle ?? 'Создать аккаунт',
                       textAlign: TextAlign.center,
                       style:
                           Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -77,7 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Sign up to get started',
+                      l10n?.registerSubtitle ?? 'Присоединяйтесь к Workly',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Colors.grey[600],
@@ -86,19 +88,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 32),
                     CustomTextField(
                       controller: _nameController,
-                      label: 'Full Name',
+                      label: l10n?.fullNameLabel ?? 'Полное имя',
                       icon: Icons.badge_outlined,
                       validator: (value) =>
-                          value == null || value.isEmpty ? 'Required' : null,
+                          value == null || value.isEmpty ? 'Обязательное поле' : null,
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
                       controller: _emailController,
-                      label: 'Email',
+                      label: l10n?.emailLabel ?? 'Email',
                       icon: Icons.email_outlined,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Required';
-                        if (!value.contains('@')) return 'Invalid email';
+                        if (value == null || value.isEmpty) return 'Обязательное поле';
+                        if (!value.contains('@')) return 'Неверный email';
                         return null;
                       },
                     ),
@@ -106,22 +108,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     CustomTextField(
                       controller: _passwordController,
-                      label: 'Password',
+                      label: l10n?.passwordLabel ?? 'Пароль',
                       icon: Icons.lock_outline,
                       isPassword: true,
                       validator: (value) =>
-                          value == null || value.isEmpty ? 'Required' : null,
+                          value == null || value.isEmpty ? 'Обязательное поле' : null,
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
                       controller: _confirmPasswordController,
-                      label: 'Confirm Password',
+                      label: l10n?.confirmPasswordLabel ?? 'Подтвердите пароль',
                       icon: Icons.lock_outline,
                       isPassword: true,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Required';
+                        if (value == null || value.isEmpty) return 'Обязательное поле';
                         if (value != _passwordController.text) {
-                          return 'Passwords do not match';
+                          return l10n?.passwordMismatch ?? 'Пароли не совпадают';
                         }
                         return null;
                       },
@@ -129,7 +131,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 32),
                     PrimaryButton(
                       onPressed: _register,
-                      text: 'Register',
+                      text: l10n?.registerButton ?? 'Зарегистрироваться',
                       isLoading: _isLoading,
                     ),
                   ],

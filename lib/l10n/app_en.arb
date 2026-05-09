@@ -1,0 +1,153 @@
+{
+  "@@locale": "en",
+
+  "appName": "Workly",
+
+  "loginTitle": "Welcome Back",
+  "loginSubtitle": "Sign in to find your dream job",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "loginButton": "Sign In",
+  "noAccount": "Don't have an account?",
+  "registerLink": "Register",
+  "forgotPassword": "Forgot password?",
+  "loginError": "Invalid email or password",
+
+  "registerTitle": "Create Account",
+  "registerSubtitle": "Join Workly today",
+  "fullNameLabel": "Full Name",
+  "confirmPasswordLabel": "Confirm Password",
+  "registerButton": "Register",
+  "hasAccount": "Already have an account?",
+  "loginLink": "Sign In",
+  "passwordMismatch": "Passwords do not match",
+
+  "searchHint": "Search jobs...",
+  "noJobsFound": "No jobs found",
+  "appliedTo": "Applied to {company}",
+  "@appliedTo": {
+    "placeholders": {
+      "company": { "type": "String" }
+    }
+  },
+  "passedOn": "Passed on {company}",
+  "@passedOn": {
+    "placeholders": {
+      "company": { "type": "String" }
+    }
+  },
+
+  "homeTab": "Home",
+  "profileTab": "Profile",
+  "chatsTab": "Chats",
+  "analyticsTab": "Analytics",
+  "historyTab": "History",
+
+  "profileTitle": "Profile",
+  "profileName": "Name",
+  "profileEmail": "Email",
+  "profileAbout": "About",
+  "profileExperience": "Experience",
+  "profileEducation": "Education",
+  "profileSkills": "Skills",
+  "profileSaved": "Profile saved!",
+  "profileSaveError": "Failed to save profile",
+  "noSkillsSelected": "No skills selected",
+  "maxSkillsReached": "You can select up to 5 skills",
+  "aboutMeLabel": "About me",
+  "notSet": "Not set",
+
+  "resumeTitle": "Resume / CV",
+  "attachResumeLink": "Attach Resume Link",
+  "resumeLinkSaved": "Resume link saved!",
+  "resumeAvailableToEmployers": "Available to employers",
+  "resumeUploaded": "Resume uploaded",
+  "editLink": "Edit",
+  "deleteResume": "Delete",
+  "removeResume": "Remove Resume?",
+  "removeResumeConfirm": "Are you sure you want to remove the resume link?",
+  "resumeRemoved": "Resume removed.",
+  "attachResumeLinkTitle": "Attach Resume Link",
+  "resumeUrlLabel": "Resume URL",
+  "resumeFileNameLabel": "File name (optional)",
+  "resumeHint": "https://drive.google.com/...",
+  "resumeFileHint": "My_Resume.pdf",
+  "saveButton": "Save",
+  "cancelButton": "Cancel",
+  "resumeLinkInfo": "Paste a Google Drive, Dropbox or HH.ru link",
+
+  "videoIntroTitle": "Video Introduction",
+  "videoIntroSec": "15 sec",
+  "videoIntroDescription": "Record a short video to introduce yourself to employers and stand out from other candidates.",
+  "recordVideo": "Record Video Introduction",
+  "reRecord": "Re-record",
+  "deleteVideo": "Delete",
+  "deleteVideoTitle": "Delete video introduction?",
+  "deleteVideoConfirm": "Are you sure you want to delete the video?",
+  "videoDeleted": "Video deleted.",
+  "videoUploaded": "Video introduction uploaded!",
+  "uploadError": "Upload error: {error}",
+  "@uploadError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "uploadingVideo": "Uploading video... {percent}%",
+  "@uploadingVideo": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "preparingUpload": "Preparing upload...",
+  "recordHint": "Tap to record your video introduction",
+  "stopHint": "Tap to stop",
+  "maxDuration": "Max 15 sec",
+  "preview": "Preview",
+
+  "settingsTitle": "Settings",
+  "languageLabel": "Language",
+  "themeLabel": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "supportLabel": "Support Service",
+  "supportTitle": "Support Service",
+  "supportContact": "Contact us at:",
+  "logoutButton": "Logout",
+  "closeButton": "Close",
+
+  "chatsTitle": "Messages",
+  "noChats": "No messages",
+  "typeMessage": "Type a message...",
+  "sendButton": "Send",
+
+  "analyticsTitle": "Analytics",
+  "totalViews": "Views",
+  "totalSwipes": "Swipes",
+  "totalApplies": "Applications",
+
+  "historyTitle": "Application History",
+  "noHistory": "No history yet",
+  "applied": "Applied",
+  "skipped": "Skipped",
+
+  "filterTitle": "Filters",
+  "workFormat": "Work Format",
+  "workRemote": "Remote",
+  "workOffice": "Office",
+  "workHybrid": "Hybrid",
+  "applyFilters": "Apply",
+  "resetFilters": "Reset",
+
+  "onboardingExperience": "Your Experience",
+  "onboardingSkills": "Your Skills",
+  "onboardingEducation": "Education",
+  "onboardingAbout": "About You",
+  "onboardingResume": "Resume",
+  "continueButton": "Continue",
+  "skipButton": "Skip",
+
+  "errorGeneral": "An error occurred",
+  "retry": "Retry",
+  "loading": "Loading..."
+}

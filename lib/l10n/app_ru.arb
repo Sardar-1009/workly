@@ -1,0 +1,153 @@
+{
+  "@@locale": "ru",
+
+  "appName": "Workly",
+
+  "loginTitle": "Добро пожаловать",
+  "loginSubtitle": "Войдите, чтобы найти работу мечты",
+  "emailLabel": "Email",
+  "passwordLabel": "Пароль",
+  "loginButton": "Войти",
+  "noAccount": "Нет аккаунта?",
+  "registerLink": "Зарегистрироваться",
+  "forgotPassword": "Забыли пароль?",
+  "loginError": "Неверный email или пароль",
+
+  "registerTitle": "Создать аккаунт",
+  "registerSubtitle": "Присоединяйтесь к Workly",
+  "fullNameLabel": "Полное имя",
+  "confirmPasswordLabel": "Подтвердите пароль",
+  "registerButton": "Зарегистрироваться",
+  "hasAccount": "Уже есть аккаунт?",
+  "loginLink": "Войти",
+  "passwordMismatch": "Пароли не совпадают",
+
+  "searchHint": "Поиск вакансий...",
+  "noJobsFound": "Вакансии не найдены",
+  "appliedTo": "Отклик отправлен в {company}",
+  "@appliedTo": {
+    "placeholders": {
+      "company": { "type": "String" }
+    }
+  },
+  "passedOn": "Пропущено: {company}",
+  "@passedOn": {
+    "placeholders": {
+      "company": { "type": "String" }
+    }
+  },
+
+  "homeTab": "Главная",
+  "profileTab": "Профиль",
+  "chatsTab": "Чаты",
+  "analyticsTab": "Аналитика",
+  "historyTab": "История",
+
+  "profileTitle": "Профиль",
+  "profileName": "Имя",
+  "profileEmail": "Email",
+  "profileAbout": "О себе",
+  "profileExperience": "Опыт",
+  "profileEducation": "Образование",
+  "profileSkills": "Навыки",
+  "profileSaved": "Профиль сохранён!",
+  "profileSaveError": "Не удалось сохранить профиль",
+  "noSkillsSelected": "Навыки не выбраны",
+  "maxSkillsReached": "Можно выбрать не более 5 навыков",
+  "aboutMeLabel": "О себе",
+  "notSet": "Не указано",
+
+  "resumeTitle": "Резюме / CV",
+  "attachResumeLink": "Прикрепить ссылку на резюме",
+  "resumeLinkSaved": "Ссылка на резюме сохранена!",
+  "resumeAvailableToEmployers": "Доступно работодателям",
+  "resumeUploaded": "Резюме загружено",
+  "editLink": "Редактировать",
+  "deleteResume": "Удалить",
+  "removeResume": "Удалить резюме?",
+  "removeResumeConfirm": "Вы уверены, что хотите удалить ссылку на резюме?",
+  "resumeRemoved": "Резюме удалено.",
+  "attachResumeLinkTitle": "Прикрепить ссылку на резюме",
+  "resumeUrlLabel": "URL резюме",
+  "resumeFileNameLabel": "Название файла (необязательно)",
+  "resumeHint": "https://drive.google.com/...",
+  "resumeFileHint": "My_Resume.pdf",
+  "saveButton": "Сохранить",
+  "cancelButton": "Отмена",
+  "resumeLinkInfo": "Вставьте ссылку на Google Диск, Dropbox или HH.ru",
+
+  "videoIntroTitle": "Видео-визитка",
+  "videoIntroSec": "15 сек",
+  "videoIntroDescription": "Запишите короткое видео, чтобы представиться работодателю и выделиться среди других кандидатов.",
+  "recordVideo": "Записать видео-визитку",
+  "reRecord": "Перезаписать",
+  "deleteVideo": "Удалить",
+  "deleteVideoTitle": "Удалить видео-визитку?",
+  "deleteVideoConfirm": "Вы уверены, что хотите удалить видео?",
+  "videoDeleted": "Видео удалено.",
+  "videoUploaded": "Видео-визитка загружена!",
+  "uploadError": "Ошибка загрузки: {error}",
+  "@uploadError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "uploadingVideo": "Загрузка видео... {percent}%",
+  "@uploadingVideo": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "preparingUpload": "Подготовка к загрузке...",
+  "recordHint": "Нажмите для записи видео-визитки",
+  "stopHint": "Нажмите для остановки",
+  "maxDuration": "Макс. 15 сек",
+  "preview": "Предпросмотр",
+
+  "settingsTitle": "Настройки",
+  "languageLabel": "Язык",
+  "themeLabel": "Тема",
+  "themeSystem": "Системная",
+  "themeLight": "Светлая",
+  "themeDark": "Тёмная",
+  "supportLabel": "Служба поддержки",
+  "supportTitle": "Служба поддержки",
+  "supportContact": "Свяжитесь с нами:",
+  "logoutButton": "Выйти",
+  "closeButton": "Закрыть",
+
+  "chatsTitle": "Сообщения",
+  "noChats": "Нет сообщений",
+  "typeMessage": "Введите сообщение...",
+  "sendButton": "Отправить",
+
+  "analyticsTitle": "Аналитика",
+  "totalViews": "Просмотры",
+  "totalSwipes": "Свайпы",
+  "totalApplies": "Отклики",
+
+  "historyTitle": "История откликов",
+  "noHistory": "История пуста",
+  "applied": "Откликнулись",
+  "skipped": "Пропущено",
+
+  "filterTitle": "Фильтры",
+  "workFormat": "Формат работы",
+  "workRemote": "Удалённо",
+  "workOffice": "Офис",
+  "workHybrid": "Гибрид",
+  "applyFilters": "Применить",
+  "resetFilters": "Сбросить",
+
+  "onboardingExperience": "Ваш опыт",
+  "onboardingSkills": "Ваши навыки",
+  "onboardingEducation": "Образование",
+  "onboardingAbout": "О себе",
+  "onboardingResume": "Резюме",
+  "continueButton": "Продолжить",
+  "skipButton": "Пропустить",
+
+  "errorGeneral": "Произошла ошибка",
+  "retry": "Повторить",
+  "loading": "Загрузка..."
+}

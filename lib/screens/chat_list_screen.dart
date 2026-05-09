@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/chat_conversation.dart';
 import '../services/chat_service.dart';
 import 'chat_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -29,13 +30,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = currentUserId;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text(
-          'Messages',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n?.chatsTitle ?? 'Messages',
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -65,7 +67,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 final conversations = snapshot.data ?? [];
 
                 if (conversations.isEmpty) {
-                  return _buildEmptyState();
+                  return _buildEmptyState(l10n);
                 }
 
                 return ListView.builder(
@@ -80,7 +82,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppLocalizations? l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -92,19 +94,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No messages yet',
+            l10n?.noChats ?? 'No messages yet',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'When employers contact you,\nthe messages will appear here.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey[500],
             ),
           ),
         ],

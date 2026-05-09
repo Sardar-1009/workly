@@ -11,12 +11,12 @@ class OnboardingStep1Experience extends StatelessWidget {
   });
 
   final List<String> _options = const [
-    'Internship',
-    'Entry Level & Graduate',
-    'Junior (1–2 years)',
-    'Mid Level (3–5 years)',
-    'Senior (6–9 years)',
-    'Expert & Leadership (10+ years)',
+    'Стажировка',
+    'Начальный уровень / Без опыта',
+    'Junior (1–2 года)',
+    'Mid Level (3–5 лет)',
+    'Senior (6–9 лет)',
+    'Expert / Руководитель (10+ лет)',
   ];
 
   @override
@@ -25,14 +25,14 @@ class OnboardingStep1Experience extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'How much experience do you have?',
+          'Какой у вас опыт работы?',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
         const SizedBox(height: 8),
         Text(
-          'Select your experience level below.',
+          'Выберите ваш уровень опыта ниже.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: Colors.grey,
               ),

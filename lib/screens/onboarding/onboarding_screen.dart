@@ -11,6 +11,7 @@ import 'steps/onboarding_step_1_experience.dart';
 import 'steps/onboarding_step_2_skills.dart';
 import 'steps/onboarding_step_3_education.dart';
 import 'steps/onboarding_step_4_about.dart';
+import 'steps/onboarding_step_5_resume.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -22,17 +23,66 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  final int _totalPages = 4;
+  final int _totalPages = 5;
 
   // Draft State
   String _experience = '';
   List<String> _skills = [];
   String _education = '';
   String _about = '';
+  String _resumeLink = '';
 
   @override
   void initState() {
     super.initState();
+    _loadDraft();
+  }
+
+  Future<void> _loadDraft() async {
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final draftJson = prefs.getString('onboarding_draft_${authUser.uid}');
+    if (draftJson != null) {
+      try {
+        final data = jsonDecode(draftJson);
+        setState(() {
+          _currentPage = data['currentPage'] ?? 0;
+          _experience = data['experience'] ?? '';
+          _skills = List<String>.from(data['skills'] ?? []);
+          _education = data['education'] ?? '';
+          _about = data['about'] ?? '';
+          _resumeLink = data['resumeLink'] ?? '';
+        });
+        
+        if (_currentPage > 0 && _currentPage < _totalPages) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_pageController.hasClients) {
+              _pageController.jumpToPage(_currentPage);
+            }
+          });
+        }
+      } catch (e) {
+        debugPrint('Error loading onboarding draft: $e');
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final data = {
+      'currentPage': _currentPage,
+      'experience': _experience,
+      'skills': _skills,
+      'education': _education,
+      'about': _about,
+      'resumeLink': _resumeLink,
+    };
+    await prefs.setString('onboarding_draft_${authUser.uid}', jsonEncode(data));
   }
 
   void _nextPage() {
@@ -41,7 +91,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-      setState(() => _currentPage++);
+      setState(() {
+        _currentPage++;
+        _saveDraft();
+      });
     } else {
       _finishOnboarding();
     }
@@ -53,7 +106,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-      setState(() => _currentPage--);
+      setState(() {
+        _currentPage--;
+        _saveDraft();
+      });
     } else {
       Navigator.of(context).pop();
     }
@@ -69,9 +125,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         return _education.isNotEmpty;
       case 3: // About
         return _about.isNotEmpty;
+      case 4: // Resume link — optional, always valid
+        return true;
       default:
         return false;
     }
+  }
+
+  void _skipResume() {
+    setState(() => _resumeLink = '');
+    _finishOnboarding();
   }
 
   Future<void> _finishOnboarding() async {
@@ -101,7 +164,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       profile.skills = _skills;
       profile.education = _education;
       profile.about = _about;
+      profile.resumeUrl = _resumeLink;
       profile.onboardingCompleted = true;
+
+      // Clear draft on complete
+      await prefs.remove('onboarding_draft_$currentUserId');
 
       // Save locally
       await prefs.setString(profileKey, jsonEncode(profile.toJson()));
@@ -113,6 +180,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           'experience': _experience,
           'education': _education,
           'about': _about,
+          'resumeUrl': _resumeLink,
           'onboardingCompleted': true,
         }, SetOptions(merge: true));
       } catch (e) {
@@ -155,7 +223,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48), // Balance back button
+                  // Show Skip only on the resume step
+                  if (_currentPage == 4)
+                    TextButton(
+                      onPressed: _skipResume,
+                      child: const Text('Пропустить'),
+                    )
+                  else
+                    const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -168,7 +243,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   OnboardingStep1Experience(
                     selectedExperience: _experience.isEmpty ? null : _experience,
-                    onSelect: (val) => setState(() => _experience = val),
+                    onSelect: (val) {
+                      setState(() => _experience = val);
+                      _saveDraft();
+                    },
                   ),
                   OnboardingStep2Skills(
                     selectedSkills: _skills,
@@ -179,16 +257,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         } else {
                           _skills.add(val);
                         }
+                        _saveDraft();
                       });
                     },
                   ),
                   OnboardingStep3Education(
                     selectedEducation: _education.isEmpty ? null : _education,
-                    onSelect: (val) => setState(() => _education = val),
+                    onSelect: (val) {
+                      setState(() => _education = val);
+                      _saveDraft();
+                    },
                   ),
                   OnboardingStep4About(
                     aboutText: _about,
-                    onChanged: (val) => setState(() => _about = val),
+                    onChanged: (val) {
+                      setState(() => _about = val);
+                      _saveDraft();
+                    },
+                  ),
+                  OnboardingStep5Resume(
+                    resumeLink: _resumeLink,
+                    onChanged: (val) {
+                      setState(() => _resumeLink = val);
+                      _saveDraft();
+                    },
+                    onSkip: _skipResume,
                   ),
                 ],
               ),
@@ -205,7 +298,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     padding: const EdgeInsets.all(16),
                   ),
                   child: const Text(
-                    'Continue',
+                    'Продолжить',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),

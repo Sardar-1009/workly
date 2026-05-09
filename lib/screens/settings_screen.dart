@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/theme_manager.dart';
+import '../theme/language_manager.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,26 +13,26 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String _selectedLanguage = 'English';
 
   void _showSupportDialog() {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Support Service'),
-        content: const Column(
+        title: Text(l10n.supportTitle),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Contact us at:'),
-            SizedBox(height: 8),
-            Row(children: [
+            Text(l10n.supportContact),
+            const SizedBox(height: 8),
+            const Row(children: [
               Icon(Icons.email, size: 16),
               SizedBox(width: 8),
               Text('support@workly.com')
             ]),
-            SizedBox(height: 8),
-            Row(children: [
+            const SizedBox(height: 8),
+            const Row(children: [
               Icon(Icons.phone, size: 16),
               SizedBox(width: 8),
               Text('+1 555 123 4567')
@@ -40,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(l10n.closeButton),
           )
         ],
       ),
@@ -59,46 +61,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settingsTitle),
         centerTitle: true,
       ),
       body: ListView(
         children: [
           const SizedBox(height: 16),
           // Language
-          ListTile(
-            leading: const Icon(Icons.language),
-            title: const Text('Language'),
-            trailing: DropdownButton<String>(
-              value: _selectedLanguage,
-              underline: const SizedBox(),
-              items: ['English', 'Русский'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                if (newValue != null) {
-                  setState(() => _selectedLanguage = newValue);
-                }
-              },
-            ),
+          ValueListenableBuilder<Locale>(
+            valueListenable: LanguageManager(),
+            builder: (context, locale, _) {
+              return ListTile(
+                leading: const Icon(Icons.language),
+                title: Text(l10n.languageLabel),
+                trailing: DropdownButton<String>(
+                  value: locale.languageCode,
+                  underline: const SizedBox(),
+                  items: const [
+                    DropdownMenuItem(value: 'en', child: Text('English')),
+                    DropdownMenuItem(value: 'ru', child: Text('Русский')),
+                  ],
+                  onChanged: (newValue) {
+                    if (newValue != null) {
+                      LanguageManager().setLocale(Locale(newValue));
+                    }
+                  },
+                ),
+              );
+            },
           ),
           const Divider(),
 
           // Theme
           ListTile(
             leading: const Icon(Icons.brightness_6),
-            title: const Text('Theme'),
+            title: Text(l10n.themeLabel),
             subtitle: ValueListenableBuilder<ThemeMode>(
               valueListenable: ThemeManager(),
               builder: (context, mode, _) {
-                String text = 'System';
-                if (mode == ThemeMode.light) text = 'Light';
-                if (mode == ThemeMode.dark) text = 'Dark';
+                String text = l10n.themeSystem;
+                if (mode == ThemeMode.light) text = l10n.themeLight;
+                if (mode == ThemeMode.dark) text = l10n.themeDark;
                 return Text(text);
               },
             ),
@@ -107,17 +114,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ThemeManager().setThemeMode(mode);
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: ThemeMode.system,
-                  child: Text('System'),
+                  child: Text(l10n.themeSystem),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: ThemeMode.light,
-                  child: Text('Light'),
+                  child: Text(l10n.themeLight),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: ThemeMode.dark,
-                  child: Text('Dark'),
+                  child: Text(l10n.themeDark),
                 ),
               ],
             ),
@@ -127,7 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // Support
           ListTile(
             leading: const Icon(Icons.help_outline),
-            title: const Text('Support Service'),
+            title: Text(l10n.supportLabel),
             onTap: _showSupportDialog,
           ),
           const Divider(),
@@ -138,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: OutlinedButton.icon(
               onPressed: _logout,
               icon: const Icon(Icons.logout),
-              label: const Text('Logout'),
+              label: Text(l10n.logoutButton),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.all(16),
                 foregroundColor: Colors.red,

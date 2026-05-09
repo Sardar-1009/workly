@@ -4,6 +4,7 @@ import 'screens/home_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/chat_list_screen.dart';
+import 'l10n/app_localizations.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -25,6 +26,8 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return PopScope(
       canPop: _currentIndex == 0,
       onPopInvoked: (didPop) {
@@ -43,25 +46,25 @@ class _MainWrapperState extends State<MainWrapper> {
               _currentIndex = index;
             });
           },
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Icons.swipe),
-              label: 'Jobs',
+              icon: const Icon(Icons.swipe),
+              label: l10n.homeTab,
             ),
             NavigationDestination(
-              icon: Icon(Icons.history),
-              selectedIcon: Icon(Icons.history_edu),
-              label: 'Activity',
+              icon: const Icon(Icons.history),
+              selectedIcon: const Icon(Icons.history_edu),
+              label: l10n.historyTab,
             ),
             NavigationDestination(
-              icon: Icon(Icons.chat_bubble_outline),
-              selectedIcon: Icon(Icons.chat_bubble),
-              label: 'Chats',
+              icon: const Icon(Icons.chat_bubble_outline),
+              selectedIcon: const Icon(Icons.chat_bubble),
+              label: l10n.chatsTab,
             ),
             NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person),
-              label: 'Profile',
+              icon: const Icon(Icons.person_outline),
+              selectedIcon: const Icon(Icons.person),
+              label: l10n.profileTab,
             ),
           ],
         ),

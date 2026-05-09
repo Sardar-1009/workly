@@ -10,6 +10,7 @@ class UserProfile {
   String photoUrl;
   String resumeUrl;       // URL загруженного резюме в Firebase Storage
   String resumeFileName;  // Оригинальное имя файла резюме
+  String introVideoUrl;   // URL 15-секундного видео-визитки
   DateTime? createdAt;
 
   // Local helper
@@ -25,6 +26,7 @@ class UserProfile {
     this.photoUrl = '',
     this.resumeUrl = '',
     this.resumeFileName = '',
+    this.introVideoUrl = '',
     this.createdAt,
     this.onboardingCompleted = false,
   }) : skills = skills ?? [];
@@ -39,6 +41,7 @@ class UserProfile {
         'photoUrl': photoUrl,
         'resumeUrl': resumeUrl,
         'resumeFileName': resumeFileName,
+        'introVideoUrl': introVideoUrl,
         if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
         'onboardingCompleted': onboardingCompleted,
       };
@@ -54,6 +57,7 @@ class UserProfile {
       photoUrl: json['photoUrl'] ?? '',
       resumeUrl: json['resumeUrl'] ?? '',
       resumeFileName: json['resumeFileName'] ?? '',
+      introVideoUrl: json['introVideoUrl'] ?? '',
       createdAt: json['createdAt'] != null
           ? (json['createdAt'] as Timestamp).toDate()
           : null,
