@@ -74,9 +74,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Filters
         if (_currentFilters != null) {
-          // Work Format
-          if (_currentFilters!.workFormat != null &&
-              v.workType != _currentFilters!.workFormat) {
+          // Work Type
+          if (_currentFilters!.workType != null &&
+              v.workType != _currentFilters!.workType) {
+            return false;
+          }
+          // City filter
+          if (_currentFilters!.city != null &&
+              v.location != _currentFilters!.city) {
             return false;
           }
           // Experience filter removed from vacancy but can be matched against skills in the future
@@ -127,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search jobs...',
+                  hintText: 'Поиск вакансий...',
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12)),
@@ -145,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : filteredVacancies.isEmpty
-                      ? const Center(child: Text("No jobs found"))
+                      ? const Center(child: Text("Вакансии не найдены"))
                       : CardSwiper(
                           key: ValueKey(filteredVacancies
                               .length), // Rebuild if list changes
@@ -206,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Applied to ${vacancy.company}'),
+          content: Text('Отклик отправлен в ${vacancy.company}'),
           backgroundColor: Colors.green,
           duration: const Duration(milliseconds: 500),
         ),
@@ -218,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Passed on ${vacancy.company}'),
+          content: Text('Пропущено: ${vacancy.company}'),
           backgroundColor: Colors.grey,
           duration: const Duration(milliseconds: 500),
         ),

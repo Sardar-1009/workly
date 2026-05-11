@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 
 class FilterResult {
   final RangeValues salaryRange;
-  final String? workFormat;
+  final String? workType;
   final String? experience;
+  final String? city;
 
-  FilterResult({required this.salaryRange, this.workFormat, this.experience});
+  FilterResult({
+    required this.salaryRange,
+    this.workType,
+    this.experience,
+    this.city,
+  });
 }
 
 class FilterScreen extends StatefulWidget {
@@ -19,16 +25,40 @@ class FilterScreen extends StatefulWidget {
 
 class _FilterScreenState extends State<FilterScreen> {
   RangeValues _salaryRange = const RangeValues(0, 200); // k$
-  String? _workFormat; // Remote, Office, Hybrid
+  String? _workType; // full-time, part-time, etc.
   String? _experience; // 0-1, 1-3, 3-5, 5+
+  String? _city; // City filter
+
+  final Map<String, String> _workTypeLabels = {
+    'full-time': 'Полная занятость',
+    'part-time': 'Частичная занятость',
+    'contract': 'Контракт',
+    'freelance': 'Фриланс',
+    'internship': 'Стажировка',
+  };
+
+  final List<String> _cities = [
+    'Бишкек',
+    'Ош',
+    'Джалал-Абад',
+    'Каракол',
+    'Алматы',
+    'Астана',
+    'Ташкент',
+    'Москва',
+    'Санкт-Петербург',
+    'Казань',
+    'Удаленно'
+  ];
 
   @override
   void initState() {
     super.initState();
     if (widget.initialFilters != null) {
       _salaryRange = widget.initialFilters!.salaryRange;
-      _workFormat = widget.initialFilters!.workFormat;
+      _workType = widget.initialFilters!.workType;
       _experience = widget.initialFilters!.experience;
+      _city = widget.initialFilters!.city;
     }
   }
 
@@ -36,19 +66,19 @@ class _FilterScreenState extends State<FilterScreen> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24.0),
-      height: MediaQuery.of(context).size.height * 0.6,
+      height: MediaQuery.of(context).size.height * 0.85,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Text(
-            'Filters',
+            'Фильтры',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
 
           // Salary
-          const Text('Salary Range (k\$)',
+          const Text('Диапазон зарплаты (\$)',
               style: TextStyle(fontWeight: FontWeight.bold)),
           RangeSlider(
             values: _salaryRange,
@@ -56,8 +86,8 @@ class _FilterScreenState extends State<FilterScreen> {
             max: 300,
             divisions: 30,
             labels: RangeLabels(
-              '\$${_salaryRange.start.round()}k',
-              '\$${_salaryRange.end.round()}k',
+              '\$${_salaryRange.start.round()}',
+              '\$${_salaryRange.end.round()}',
             ),
             onChanged: (values) {
               setState(() {
@@ -68,19 +98,47 @@ class _FilterScreenState extends State<FilterScreen> {
 
           const SizedBox(height: 24),
 
+          // City
+          const Text('Город', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            value: _city,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            hint: const Text('Выберите город...'),
+            items: [
+              const DropdownMenuItem(value: null, child: Text('Все города')),
+              ..._cities.map((city) => DropdownMenuItem(
+                    value: city,
+                    child: Text(city),
+                  ))
+            ],
+            onChanged: (val) {
+              setState(() {
+                _city = val;
+              });
+            },
+          ),
+
+          const SizedBox(height: 24),
+
           // Format
-          const Text('Work Format',
+          const Text('Тип занятости',
               style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
-            children: ['Remote', 'Office', 'Hybrid'].map((format) {
-              final isSelected = _workFormat == format;
+            children: _workTypeLabels.entries.map((entry) {
+              final isSelected = _workType == entry.key;
               return ChoiceChip(
-                label: Text(format),
+                label: Text(entry.value),
                 selected: isSelected,
                 onSelected: (selected) {
-                  setState(() => _workFormat = selected ? format : null);
+                  setState(() => _workType = selected ? entry.key : null);
                 },
               );
             }).toList(),
@@ -89,13 +147,13 @@ class _FilterScreenState extends State<FilterScreen> {
           const SizedBox(height: 24),
 
           // Experience
-          const Text('Experience',
+          const Text('Опыт работы',
               style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             children:
-                ['0-1 year', '1-3 years', '3-5 years', '5+ years'].map((exp) {
+                ['Без опыта', '1-3 года', '3-5 лет', '5+ лет'].map((exp) {
               final isSelected = _experience == exp;
               return ChoiceChip(
                 label: Text(exp),
@@ -115,7 +173,7 @@ class _FilterScreenState extends State<FilterScreen> {
                 child: OutlinedButton(
                   onPressed: () =>
                       Navigator.pop(context), // Clear? Or just Cancel
-                  child: const Text('Cancel'),
+                  child: const Text('Отмена'),
                 ),
               ),
               const SizedBox(width: 16),
@@ -126,10 +184,11 @@ class _FilterScreenState extends State<FilterScreen> {
                           context,
                           FilterResult(
                               salaryRange: _salaryRange,
-                              workFormat: _workFormat,
-                              experience: _experience));
+                              workType: _workType,
+                              experience: _experience,
+                              city: _city));
                     },
-                    child: const Text('Apply')),
+                    child: const Text('Применить')),
               ),
             ],
           )
