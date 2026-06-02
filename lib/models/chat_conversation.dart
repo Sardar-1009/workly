@@ -8,10 +8,14 @@ class ChatConversation {
   final String lastMessage;
   final DateTime lastMessageTime;
 
-  // UI-specific transient properties (may be fetched separately or cached locally)
+  // Employer / company data stored directly in the chat document by the web dashboard
   final String employerName;
   final String companyName;
+  final String companyLogo; // can be a base64 data URL or a network URL, empty = use icon
+
+  // Legacy avatar URL (kept for backwards compat, prefer companyLogo)
   final String employerAvatarUrl;
+
   final int unreadCountUser;
   final int unreadCountEmployer;
 
@@ -23,30 +27,46 @@ class ChatConversation {
     required this.lastMessage,
     required this.lastMessageTime,
     this.employerName = 'Employer',
-    this.companyName = 'Company',
-    this.employerAvatarUrl = 'https://i.pravatar.cc/150?img=11',
+    this.companyName = '',
+    this.companyLogo = '',
+    this.employerAvatarUrl = '',
     this.unreadCountUser = 0,
     this.unreadCountEmployer = 0,
   });
 
   factory ChatConversation.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>;
+
+    // companyLogo written by web dashboard
+    final companyLogo = (data['companyLogo'] as String? ?? '').trim();
+
+    // fall back to legacy employerAvatarUrl
+    final avatarUrl = (data['employerAvatarUrl'] as String? ?? '').trim();
+
     return ChatConversation(
       id: doc.id,
       userId: data['userId'] ?? '',
       employerId: data['employerId'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       lastMessage: data['lastMessage'] ?? data['lastMessageText'] ?? '',
-      lastMessageTime: (data['lastMessageTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      
-      // Attempt to load extra fields if they exist, otherwise default
+      lastMessageTime:
+          (data['lastMessageTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       employerName: data['employerName'] ?? 'Employer',
-      companyName: data['companyName'] ?? 'Company Name',
-      employerAvatarUrl: data['employerAvatarUrl'] ?? 'https://i.pravatar.cc/150?img=11',
+      companyName: data['companyName'] ?? '',
+      companyLogo: companyLogo,
+      employerAvatarUrl: avatarUrl,
       unreadCountUser: data['unreadCountUser'] ?? 0,
       unreadCountEmployer: data['unreadCountEmployer'] ?? 0,
     );
   }
+
+  /// The best available logo: prefer companyLogo, then employerAvatarUrl
+  String get effectiveLogo =>
+      companyLogo.isNotEmpty ? companyLogo : employerAvatarUrl;
+
+  /// The display name to show in the UI
+  String get displayName =>
+      companyName.isNotEmpty ? companyName : employerName;
 
   Map<String, dynamic> toFirestore() {
     return {

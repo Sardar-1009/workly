@@ -71,13 +71,16 @@ class OnboardingStep2Skills extends StatelessWidget {
                   },
                   backgroundColor: Theme.of(context).colorScheme.surface,
                   selectedColor: Theme.of(context).colorScheme.primaryContainer,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   labelStyle: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                     color: isSelected
                         ? Theme.of(context).colorScheme.onPrimaryContainer
                         : Theme.of(context).colorScheme.onSurface,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                     side: BorderSide(
                       color: isSelected
                           ? Theme.of(context).colorScheme.primary

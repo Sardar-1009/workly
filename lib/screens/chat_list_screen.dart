@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/chat_conversation.dart';
 import '../services/chat_service.dart';
+import '../widgets/company_avatar.dart';
 import 'chat_screen.dart';
 import '../l10n/app_localizations.dart';
 
@@ -125,10 +126,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
           children: [
             Stack(
               children: [
-                CircleAvatar(
+                CompanyAvatar(
+                  logoUrl: chat.effectiveLogo,
                   radius: 28,
-                  backgroundImage: NetworkImage(chat.employerAvatarUrl),
-                  backgroundColor: Colors.grey[200],
                 ),
               ],
             ),
@@ -142,7 +142,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          chat.employerName,
+                          chat.displayName,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,

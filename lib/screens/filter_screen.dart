@@ -132,6 +132,7 @@ class _FilterScreenState extends State<FilterScreen> {
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
             children: _workTypeLabels.entries.map((entry) {
               final isSelected = _workType == entry.key;
               return ChoiceChip(
@@ -152,6 +153,7 @@ class _FilterScreenState extends State<FilterScreen> {
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
             children:
                 ['Без опыта', '1-3 года', '3-5 лет', '5+ лет'].map((exp) {
               final isSelected = _experience == exp;

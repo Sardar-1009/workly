@@ -39,34 +39,47 @@ class _MainWrapperState extends State<MainWrapper> {
       },
       child: Scaffold(
         body: _screens[_currentIndex],
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          destinations: [
-            NavigationDestination(
-              icon: const Icon(Icons.swipe),
-              label: l10n.homeTab,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.history),
-              selectedIcon: const Icon(Icons.history_edu),
-              label: l10n.historyTab,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.chat_bubble_outline),
-              selectedIcon: const Icon(Icons.chat_bubble),
-              label: l10n.chatsTab,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.person_outline),
-              selectedIcon: const Icon(Icons.person),
-              label: l10n.profileTab,
-            ),
-          ],
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: NavigationBar(
+            height: 70,
+            selectedIndex: _currentIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.swipe_rounded),
+                selectedIcon: const Icon(Icons.swipe_rounded),
+                label: l10n.homeTab,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.history_rounded),
+                selectedIcon: const Icon(Icons.history_edu_rounded),
+                label: l10n.historyTab,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.chat_bubble_outline_rounded),
+                selectedIcon: const Icon(Icons.chat_bubble_rounded),
+                label: l10n.chatsTab,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.person_outline_rounded),
+                selectedIcon: const Icon(Icons.person_rounded),
+                label: l10n.profileTab,
+              ),
+            ],
+          ),
         ),
       ),
     );

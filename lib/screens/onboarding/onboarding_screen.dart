@@ -292,14 +292,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: const EdgeInsets.all(24.0),
               child: SizedBox(
                 width: double.infinity,
+                height: 56, // Thicker button
                 child: FilledButton(
                   onPressed: _isStepValid() ? _nextPage : null,
                   style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                   child: const Text(
                     'Продолжить',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

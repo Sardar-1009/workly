@@ -10,10 +10,10 @@ class Vacancy {
   final String workType;
   final List<String> skills;
   final DateTime? createdAt;
-  
-  // UI Helpers (Might be missing from strict DB schema but useful locally)
-  final String company;
-  final String? companyLogoUrl;
+
+  // Company info — populated by enriching from employers/{employerId} or from vacancy doc itself
+  final String company;       // company name
+  final String companyLogo;   // base64 data URL or network URL, empty = use icon
 
   const Vacancy({
     required this.id,
@@ -25,12 +25,12 @@ class Vacancy {
     required this.workType,
     required this.skills,
     this.createdAt,
-    this.company = 'Company Name',
-    this.companyLogoUrl,
+    this.company = '',
+    this.companyLogo = '',
   });
 
   factory Vacancy.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>;
     return Vacancy(
       id: doc.id,
       employerId: data['employerId'] ?? '',
@@ -40,9 +40,31 @@ class Vacancy {
       location: data['location'] ?? '',
       workType: data['workType'] ?? data['workFormat'] ?? 'Office',
       skills: List<String>.from(data['skills'] ?? data['tags'] ?? []),
-      createdAt: data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : null,
-      company: data['company'] ?? 'Company Name', // Kept for backwards compatibility
-      companyLogoUrl: data['companyLogoUrl'],
+      createdAt: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
+          : null,
+      company: (data['company'] as String? ?? '').trim(),
+      companyLogo: (data['companyLogo'] as String? ??
+              data['companyLogoUrl'] as String? ??
+              '')
+          .trim(),
+    );
+  }
+
+  /// Returns a copy with employer info applied
+  Vacancy withEmployer({required String name, required String logo}) {
+    return Vacancy(
+      id: id,
+      employerId: employerId,
+      title: title,
+      description: description,
+      salary: salary,
+      location: location,
+      workType: workType,
+      skills: skills,
+      createdAt: createdAt,
+      company: name.isNotEmpty ? name : company,
+      companyLogo: logo.isNotEmpty ? logo : companyLogo,
     );
   }
 }

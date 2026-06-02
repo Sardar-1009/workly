@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/chat_conversation.dart';
 import '../models/chat_message.dart';
 import '../services/chat_service.dart';
+import '../widgets/company_avatar.dart';
 
 class ChatScreen extends StatefulWidget {
   final ChatConversation conversation;
@@ -148,15 +149,9 @@ class _ChatScreenState extends State<ChatScreen> {
       titleSpacing: 0,
       title: Row(
         children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage:
-                    NetworkImage(widget.conversation.employerAvatarUrl),
-                backgroundColor: Colors.grey[200],
-              ),
-            ],
+          CompanyAvatar(
+            logoUrl: widget.conversation.effectiveLogo,
+            radius: 20,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -165,14 +160,19 @@ class _ChatScreenState extends State<ChatScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  widget.conversation.employerName,
+                  widget.conversation.displayName,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  "Last seen recently",
+                  widget.conversation.companyName.isNotEmpty &&
+                          widget.conversation.employerName.isNotEmpty &&
+                          widget.conversation.companyName !=
+                              widget.conversation.employerName
+                      ? widget.conversation.employerName
+                      : 'Онлайн',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
@@ -268,10 +268,9 @@ class _ChatScreenState extends State<ChatScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe) ...[
-            CircleAvatar(
+            CompanyAvatar(
+              logoUrl: widget.conversation.effectiveLogo,
               radius: 12,
-              backgroundImage:
-                  NetworkImage(widget.conversation.employerAvatarUrl),
             ),
             const SizedBox(width: 8),
           ],

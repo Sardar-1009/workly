@@ -80,7 +80,7 @@ class _HistoryScreenState extends State<HistoryScreen>
           tabs: [
             Tab(text: l10n?.historyTab ?? 'History'),
             Tab(text: l10n?.applied ?? 'Applied'),
-            Tab(text: l10n?.profileSaved ?? 'Saved'), // Reusing profileSaved as "Saved" for now, ideally need a specific key, but let's use what we have or just add it. Let's use hardcoded or better, I will just use l10n if I can. Wait, I'll update arb later if needed. Actually I'll use a hardcoded fallback.
+            Tab(text: 'Сохраненные'), // Reusing profileSaved as "Saved" for now, ideally need a specific key, but let's use what we have or just add it. Let's use hardcoded or better, I will just use l10n if I can. Wait, I'll update arb later if needed. Actually I'll use a hardcoded fallback.
           ],
         ),
       ),
